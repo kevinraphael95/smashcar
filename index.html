@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smash or Pass Cars</title>
+
+<style>
+body {
+  margin: 0;
+  background: #0b0b0f;
+  color: white;
+  font-family: Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.card {
+  width:340px;
+  height:520px;
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+}
+
+.card img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  position:absolute;
+}
+
+.info {
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:15px;
+  background:linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+}
+
+.title { font-size:20px; font-weight:bold; }
+.desc { font-size:13px; opacity:0.8; }
+
+button {
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.pass { background:red; color:white; }
+.smash { background:green; color:white; }
+
+.loading {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <div class="loading" id="loading">Loading...</div>
+  <img id="img"/>
+  <div class="info">
+    <div class="title" id="title"></div>
+    <div class="desc" id="desc"></div>
+
+    <div style="display:flex; justify-content:space-between; margin-top:10px;">
+      <button class="pass" onclick="next()">Pass</button>
+      <button class="smash" onclick="next()">Smash</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const API_KEY = "YOUR_API_NINJAS_KEY";
+const PROXY = "https://corsproxy.io/?";
+
+async function getMakes() {
+  const res = await fetch(PROXY + encodeURIComponent(
+    "https://api.api-ninjas.com/v1/carmakes"
+  ), {
+    headers: { "X-Api-Key": API_KEY }
+  });
+
+  return await res.json();
+}
+
+async function getModels(make) {
+  const res = await fetch(PROXY + encodeURIComponent(
+    `https://api.api-ninjas.com/v1/carmodels?make=${make.toLowerCase()}`
+  ), {
+    headers: { "X-Api-Key": API_KEY }
+  });
+
+  return await res.json();
+}
+
+async function getCar() {
+  const makes = await getMakes();
+  const make = makes[Math.floor(Math.random() * makes.length)];
+
+  const models = await getModels(make);
+
+  if (!models || !models.length) return getCar();
+
+  const model = models[Math.floor(Math.random() * models.length)];
+
+  return { make, model };
+}
+
+function getImage(make, model) {
+  return `https://source.unsplash.com/800x600/?${make},${model},car`;
+}
+
+async function load() {
+  document.getElementById("loading").style.display = "block";
+
+  const car = await getCar();
+
+  document.getElementById("title").innerText =
+    car.make + " " + car.model;
+
+  document.getElementById("desc").innerText =
+    "Live API Ninjas data";
+
+  document.getElementById("img").src =
+    getImage(car.make, car.model);
+
+  document.getElementById("loading").style.display = "none";
+}
+
+function next() {
+  load();
+}
+
+load();
+
+</script>
+
+</body>
+</html>
