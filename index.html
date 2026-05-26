@@ -1,150 +1,400 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Smash or Pass Cars</title>
-
+<title>Smash or Pass — Cars Edition</title>
 <style>
-body {
-  margin: 0;
-  background: #0b0b0f;
-  color: white;
-  font-family: Arial;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#e63946;--green:#2a9d5c;--gold:#f4a300;
+  --bg:#080810;--card:#0f0f1a;--border:#1e1e35;
+  --text:#f0f0ff;--muted:#6b6b90;
+  --card-w:340px;--card-h:500px;
 }
+html,body{width:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;min-height:100vh}
+body{display:flex;flex-direction:column;align-items:center;padding:20px 12px 40px}
 
-.card {
-  width:340px;
-  height:520px;
-  border-radius:20px;
-  overflow:hidden;
-  position:relative;
+.header{text-align:center;margin-bottom:20px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:4px;background:linear-gradient(135deg,#fff 40%,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.tagline{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+
+.tabs{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:8px 16px;border-radius:9px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.tab.active{background:rgba(255,255,255,.08);color:var(--text)}
+.tab .badge{display:inline-block;background:var(--gold);color:#000;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:5px}
+
+.view{display:none}.view.active{display:flex;flex-direction:column;align-items:center;width:100%}
+
+.scorebar{display:flex;gap:24px;margin-bottom:18px;align-items:center}
+.score-pill{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 14px}
+.score-dot{width:8px;height:8px;border-radius:50%}
+.score-dot.pass{background:var(--red)}
+.score-dot.smash{background:var(--green)}
+.score-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.score-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;min-width:20px;text-align:right}
+.score-num.pass{color:var(--red)}
+.score-num.smash{color:var(--green)}
+
+.deck{position:relative;width:var(--card-w);height:var(--card-h);margin-bottom:22px;touch-action:none}
+.card{
+  position:absolute;inset:0;border-radius:24px;overflow:hidden;
+  background:var(--card);border:1px solid var(--border);
+  will-change:transform;transform-origin:50% 100%;
 }
+.card.front{z-index:3;cursor:grab}
+.card.front:active{cursor:grabbing}
+.card.mid{z-index:2;transform:scale(.95) translateY(-10px);filter:brightness(.7)}
+.card.back{z-index:1;transform:scale(.90) translateY(-20px);filter:brightness(.45)}
+.card.ghost{z-index:0;transform:scale(.85) translateY(-28px);filter:brightness(.2)}
 
-.card img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  position:absolute;
-}
+.car-img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .5s;opacity:0}
+.car-img.visible{opacity:1}
+.skel{position:absolute;inset:0;background:linear-gradient(110deg,#0f0f1a 30%,#1a1a2e 50%,#0f0f1a 70%);background-size:400% 100%;animation:skel 1.5s ease infinite}
+@keyframes skel{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.card-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(4,4,12,.98) 0%,rgba(4,4,12,.6) 40%,rgba(4,4,12,.1) 70%,transparent 100%);pointer-events:none}
+.card-top-grad{position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(to bottom,rgba(4,4,12,.5),transparent);pointer-events:none;display:flex;align-items:flex-start;justify-content:space-between;padding:16px}
+.car-num{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:1px}
+.origin-flag{font-size:22px}
+.card-info{position:absolute;bottom:0;left:0;right:0;padding:20px}
+.car-category{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.car-make{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:2px;font-weight:300}
+.car-model{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;color:#fff;margin-bottom:8px}
+.car-year{font-family:'Bebas Neue',sans-serif;font-size:18px;color:rgba(255,255,255,.35);margin-left:6px;vertical-align:middle}
+.car-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px 6px;text-align:center}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:17px;color:#fff;line-height:1}
+.stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.car-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;margin-bottom:4px}
 
-.info {
-  position:absolute;
-  bottom:0;
-  width:100%;
-  padding:15px;
-  background:linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-}
+.vind{position:absolute;top:20px;padding:7px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;opacity:0;pointer-events:none;border:2.5px solid;transition:opacity .1s}
+.vind.smash{left:16px;color:var(--green);border-color:var(--green);text-shadow:0 0 20px rgba(42,157,92,.5)}
+.vind.pass{right:16px;color:var(--red);border-color:var(--red);text-shadow:0 0 20px rgba(230,57,70,.5)}
 
-.title { font-size:20px; font-weight:bold; }
-.desc { font-size:13px; opacity:0.8; }
+.actions{display:flex;gap:12px;align-items:center;width:var(--card-w)}
+.btn{height:56px;border:none;border-radius:16px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;cursor:pointer;transition:transform .15s,background .2s;flex:1}
+.btn:active{transform:scale(.95)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-pass{background:rgba(230,57,70,.12);color:var(--red);border:1.5px solid rgba(230,57,70,.3)}
+.btn-pass:hover:not(:disabled){background:rgba(230,57,70,.2)}
+.btn-smash{background:rgba(42,157,92,.12);color:var(--green);border:1.5px solid rgba(42,157,92,.3)}
+.btn-smash:hover:not(:disabled){background:rgba(42,157,92,.2)}
+.btn-info{width:52px;height:56px;flex:none;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:16px;color:var(--muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.btn-info:hover{background:rgba(255,255,255,.08);color:var(--text)}
 
-button {
-  border:none;
-  padding:10px 15px;
-  border-radius:10px;
-  font-weight:bold;
-  cursor:pointer;
-}
+.hint{font-size:11px;color:var(--muted);text-align:center;margin-top:12px;letter-spacing:.5px;opacity:.6}
 
-.pass { background:red; color:white; }
-.smash { background:green; color:white; }
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:#111120;border:1px solid #2a2a45;color:#fff;padding:10px 22px;border-radius:12px;font-weight:500;font-size:14px;transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
 
-.loading {
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-}
+.fly-left{animation:flyL .45s cubic-bezier(.55,.055,.675,.19) forwards!important}
+.fly-right{animation:flyR .45s cubic-bezier(.55,.055,.675,.19) forwards!important}
+@keyframes flyL{to{transform:translateX(-150%) rotate(-30deg);opacity:0}}
+@keyframes flyR{to{transform:translateX(150%) rotate(30deg);opacity:0}}
+.card-enter{animation:cardIn .4s cubic-bezier(.34,1.2,.64,1) forwards}
+@keyframes cardIn{from{transform:scale(.92) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+
+.garage-header{width:100%;max-width:700px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:0 4px}
+.garage-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px}
+.garage-count{font-size:13px;color:var(--muted)}
+.garage-empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.garage-empty .icon{font-size:48px;margin-bottom:12px}
+.garage-empty p{font-size:14px;line-height:1.7}
+.garage-grid{width:100%;max-width:700px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.garage-card{border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--border);position:relative;aspect-ratio:3/4;cursor:pointer;transition:transform .2s,border-color .2s}
+.garage-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.15)}
+.garage-card img{width:100%;height:100%;object-fit:cover;display:block}
+.garage-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 60%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px}
+.g-make{font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px}
+.g-model{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;line-height:1.1}
+.g-year{font-size:9px;color:var(--gold)}
+.garage-card .smash-badge{position:absolute;top:8px;right:8px;background:rgba(42,157,92,.9);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.5px}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-backdrop.hidden{display:none}
+.modal{background:#0d0d1f;border:1px solid #2a2a45;border-radius:20px;width:100%;max-width:400px;overflow:hidden}
+.modal-img{width:100%;height:220px;object-fit:cover}
+.modal-body{padding:20px}
+.modal-make{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px}
+.modal-name{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin:2px 0 12px}
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.modal-stat{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;text-align:center}
+.modal-stat-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:#fff}
+.modal-stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.modal-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:16px}
+.modal-close{width:100%;padding:12px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;cursor:pointer}
+.modal-close:hover{background:rgba(255,255,255,.1)}
 </style>
 </head>
-
 <body>
 
-<div class="card">
-  <div class="loading" id="loading">Loading...</div>
-  <img id="img"/>
-  <div class="info">
-    <div class="title" id="title"></div>
-    <div class="desc" id="desc"></div>
+<div class="header">
+  <div class="logo">Smash or Pass</div>
+  <div class="tagline">Cars Edition</div>
+</div>
 
-    <div style="display:flex; justify-content:space-between; margin-top:10px;">
-      <button class="pass" onclick="next()">Pass</button>
-      <button class="smash" onclick="next()">Smash</button>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('game')" id="tab-game">🏁 Vote</button>
+  <button class="tab" onclick="switchTab('garage')" id="tab-garage">🏎 Garage <span class="badge" id="garageBadge">0</span></button>
+</div>
+
+<!-- GAME VIEW -->
+<div class="view active" id="view-game">
+  <div class="scorebar">
+    <div class="score-pill"><div class="score-dot pass"></div><span class="score-label">Pass</span><div class="score-num pass" id="passScore">0</div></div>
+    <div class="score-pill"><div class="score-dot smash"></div><span class="score-label">Smash</span><div class="score-num smash" id="smashScore">0</div></div>
+  </div>
+
+  <div class="deck" id="deck">
+    <div class="card ghost" id="cGhost"><div class="skel"></div></div>
+    <div class="card back" id="cBack"><div class="skel"></div></div>
+    <div class="card mid" id="cMid"><div class="skel"></div></div>
+    <div class="card front" id="cFront">
+      <div class="skel" id="sFront"></div>
+      <img class="car-img" id="imgFront" alt="car"/>
+      <div class="card-grad"></div>
+      <div class="card-top-grad">
+        <span class="car-num" id="cardNum">#1</span>
+        <span class="origin-flag" id="cardFlag"></span>
+      </div>
+      <div class="card-info">
+        <div class="car-category" id="cardCat">⚡ Hypercar</div>
+        <div class="car-make" id="cardMake">Loading...</div>
+        <div style="display:flex;align-items:baseline;gap:0">
+          <div class="car-model" id="cardModel"></div>
+          <div class="car-year" id="cardYear"></div>
+        </div>
+        <div class="car-stats" id="cardStats"></div>
+        <div class="car-desc" id="cardDesc"></div>
+      </div>
+      <div class="vind smash" id="vindSmash">SMASH ✓</div>
+      <div class="vind pass" id="vindPass">PASS ✗</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-pass" id="btnPass" onclick="vote('pass')" disabled>✕ Pass</button>
+    <button class="btn-info" onclick="showDetail(currentCar)" title="Détails">ℹ</button>
+    <button class="btn btn-smash" id="btnSmash" onclick="vote('smash')" disabled>♥ Smash</button>
+  </div>
+  <div class="hint">← Swipe gauche pour passer · Swipe droite pour smash →</div>
+</div>
+
+<!-- GARAGE VIEW -->
+<div class="view" id="view-garage">
+  <div class="garage-header">
+    <div class="garage-title">🏎 Mon Garage</div>
+    <div class="garage-count" id="garageCount">0 voiture(s) smashée(s)</div>
+  </div>
+  <div id="garageContent">
+    <div class="garage-empty">
+      <div class="icon">🏁</div>
+      <p>Ton garage est vide.<br>Commence à voter pour remplir<br>ta collection de rêve !</p>
     </div>
   </div>
 </div>
 
+<!-- DETAIL MODAL -->
+<div class="modal-backdrop hidden" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <img class="modal-img" id="modalImg" alt="car"/>
+    <div class="modal-body">
+      <div class="modal-make" id="modalMake"></div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-stats" id="modalStats"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <button class="modal-close" onclick="document.getElementById('modal').classList.add('hidden')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
+const CARS = [
+  {id:1,make:"Ferrari",model:"LaFerrari",year:"2015",cat:"Hypercar",flag:"🇮🇹",hp:"963",top:"350",accel:"2.4",price:"1.4M€",desc:"Le sommet technologique de Maranello : V12 + moteur électrique KERS. Seulement 499 exemplaires.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Ferrari_LaFerrari.jpg/1280px-Ferrari_LaFerrari.jpg"},
+  {id:2,make:"Lamborghini",model:"Aventador SVJ",year:"2019",cat:"Supercar",flag:"🇮🇹",hp:"770",top:"351",accel:"2.8",price:"460k€",desc:"V12 naturellement aspiré, ALA 2.0 aérodynamique active. Record Nürburgring en production.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/2019_Lamborghini_Aventador_SVJ_%28red%29%2C_front_8.15.19.jpg/1280px-2019_Lamborghini_Aventador_SVJ_%28red%29%2C_front_8.15.19.jpg"},
+  {id:3,make:"Bugatti",model:"Veyron SS",year:"2012",cat:"Hypercar",flag:"🇫🇷",hp:"1200",top:"431",accel:"2.5",price:"1.9M€",desc:"16 cylindres, 4 turbos. Ex-voiture de série la plus rapide du monde à 431 km/h.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Bugatti_Veyron_16.4_Super_Sport_-_Flickr_-_Alexandre_Pr%C3%A9vot_%281_of_3%29.jpg/1280px-Bugatti_Veyron_16.4_Super_Sport_-_Flickr_-_Alexandre_Pr%C3%A9vot_%281_of_3%29.jpg"},
+  {id:4,make:"McLaren",model:"P1",year:"2013",cat:"Hypercar",flag:"🇬🇧",hp:"916",top:"350",accel:"2.8",price:"1.1M€",desc:"Hybride révolutionnaire combinant V8 twin-turbo et moteur électrique. Successeur de la F1.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/McLaren_P1_-_Goodwood_Festival_of_Speed_2013_%288985601519%29.jpg/1280px-McLaren_P1_-_Goodwood_Festival_of_Speed_2013_%288985601519%29.jpg"},
+  {id:5,make:"Porsche",model:"918 Spyder",year:"2014",cat:"Hypercar",flag:"🇩🇪",hp:"887",top:"345",accel:"2.5",price:"780k€",desc:"Triple motorisation, record au Nürburgring. La Sainte Trinité des hypercars hybrides.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Porsche_918_Spyder_-_Mondial_de_l%27Automobile_de_Paris_2014_-_002.jpg/1280px-Porsche_918_Spyder_-_Mondial_de_l%27Automobile_de_Paris_2014_-_002.jpg"},
+  {id:6,make:"Koenigsegg",model:"Agera RS",year:"2017",cat:"Hypercar",flag:"🇸🇪",hp:"1360",top:"458",accel:"2.8",price:"2.1M€",desc:"Détenteur de 5 records mondiaux. 458 km/h sur route fermée en Nevada. Suédois pur.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Koenigsegg_Agera_%28Goodwood_2012%29.jpg/1280px-Koenigsegg_Agera_%28Goodwood_2012%29.jpg"},
+  {id:7,make:"Pagani",model:"Huayra",year:"2012",cat:"Hypercar",flag:"🇮🇹",hp:"730",top:"370",accel:"3.3",price:"1.4M€",desc:"Chef-d'œuvre artisanal argentin-italien. Carbone titane, Mercedes AMG V12 biturbo.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Pagani_Huayra_-_Goodwood_Festival_of_Speed_2012_%287539562906%29.jpg/1280px-Pagani_Huayra_-_Goodwood_Festival_of_Speed_2012_%287539562906%29.jpg"},
+  {id:8,make:"Ferrari",model:"Enzo",year:"2003",cat:"Supercar",flag:"🇮🇹",hp:"660",top:"355",accel:"3.6",price:"3M€",desc:"Technologie F1 pour la route. 400 unités produites. Icône absolue de Maranello.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Ferrari_Enzo_Ferrari.JPG/1280px-Ferrari_Enzo_Ferrari.JPG"},
+  {id:9,make:"Lamborghini",model:"Murciélago LP670",year:"2009",cat:"Supercar",flag:"🇮🇹",hp:"670",top:"342",accel:"3.2",price:"450k€",desc:"V12 6.5L à couper le souffle. Le SuperVeloce ultime avant l'Aventador. Légende.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Lamborghini_Murchielago_LP_670-4_SuperVeloce_%28Ank_Kumar%29.jpg/1280px-Lamborghini_Murchielago_LP_670-4_SuperVeloce_%28Ank_Kumar%29.jpg"},
+  {id:10,make:"Aston Martin",model:"One-77",year:"2011",cat:"Hypercar",flag:"🇬🇧",hp:"750",top:"354",accel:"3.5",price:"1.4M€",desc:"77 exemplaires, carrosserie en fibre de carbone. V12 atmosphérique le plus puissant de série.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Aston_Martin_One-77_%28Ank_Kumar%29_06.jpg/1280px-Aston_Martin_One-77_%28Ank_Kumar%29_06.jpg"},
+  {id:11,make:"McLaren",model:"F1",year:"1994",cat:"Légendaire",flag:"🇬🇧",hp:"627",top:"386",accel:"3.2",price:"20M€",desc:"Gordon Murray. V12 BMW. Siège conducteur central. Longtemps la voiture la plus rapide du monde.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/McLaren_F1_LM_%2B_McLaren_F1%2C_Donington_2012_%287629596148%29.jpg/1280px-McLaren_F1_LM_%2B_McLaren_F1%2C_Donington_2012_%287629596148%29.jpg"},
+  {id:12,make:"Bugatti",model:"Chiron",year:"2017",cat:"Hypercar",flag:"🇫🇷",hp:"1500",top:"420",accel:"2.4",price:"3M€",desc:"Successeur de la Veyron. W16 quad-turbo. 1500 chevaux et un luxe insondable.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Bugatti_Chiron_2019_trimmed.jpg/1280px-Bugatti_Chiron_2019_trimmed.jpg"},
+  {id:13,make:"Ferrari",model:"488 Pista",year:"2018",cat:"Supercar",flag:"🇮🇹",hp:"720",top:"340",accel:"2.85",price:"280k€",desc:"Version piste de la 488 : 50 kg de moins, 50 ch de plus. Polyvalence et brutalité.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/2019_Ferrari_488_Pista_%28facelift%2C_red%29%2C_front_8.15.19.jpg/1280px-2019_Ferrari_488_Pista_%28facelift%2C_red%29%2C_front_8.15.19.jpg"},
+  {id:14,make:"Lamborghini",model:"Huracán EVO",year:"2020",cat:"Supercar",flag:"🇮🇹",hp:"640",top:"325",accel:"2.9",price:"215k€",desc:"V10 5.2L, 4WD, ALA actif. Le quotidien de rêve des supercars italiennes.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/2019_Lamborghini_Huracan_Evo_%28facelift%2C_yellow%29%2C_front_8.15.19.jpg/1280px-2019_Lamborghini_Huracan_Evo_%28facelift%2C_yellow%29%2C_front_8.15.19.jpg"},
+  {id:15,make:"Rimac",model:"Nevera",year:"2022",cat:"Électrique",flag:"🇭🇷",hp:"1914",top:"412",accel:"1.97",price:"2.2M€",desc:"1914 ch électriques. 0-100 en 1.97s. La voiture de production la plus rapide jamais construite.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Rimac_Nevera_Spa-Francorchamps_2022.jpg/1280px-Rimac_Nevera_Spa-Francorchamps_2022.jpg"},
+  {id:16,make:"Ford",model:"GT",year:"2017",cat:"Supercar",flag:"🇺🇸",hp:"647",top:"347",accel:"3.1",price:"500k€",desc:"Rend hommage au légendaire GT40 vainqueur du Mans en 1966. Aéro inspirée F1.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/2017_Ford_GT_-_front_%28Reg%29.jpg/1280px-2017_Ford_GT_-_front_%28Reg%29.jpg"},
+  {id:17,make:"Chevrolet",model:"Corvette Z06",year:"2023",cat:"Supercar",flag:"🇺🇸",hp:"670",top:"312",accel:"2.6",price:"110k€",desc:"Flat-plane V8 à moteur central. Agressivité américaine au prix d'une compacte européenne.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/2023_Chevrolet_Corvette_Z06_in_Rapid_Blue%2C_front_11.19.22.jpg/1280px-2023_Chevrolet_Corvette_Z06_in_Rapid_Blue%2C_front_11.19.22.jpg"},
+  {id:18,make:"Porsche",model:"911 GT3 RS",year:"2022",cat:"Supercar",flag:"🇩🇪",hp:"525",top:"296",accel:"3.2",price:"230k€",desc:"Flat-6 atmosphérique, boîte PDK, aileron immense. La perfection selon Stuttgart.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Porsche_911_GT3_RS_%28992%29_-_front%2C_Autoshow_Brussels_2023.jpg/1280px-Porsche_911_GT3_RS_%28992%29_-_front%2C_Autoshow_Brussels_2023.jpg"},
+  {id:19,make:"Mercedes-AMG",model:"ONE",year:"2023",cat:"Hypercar",flag:"🇩🇪",hp:"1063",top:"352",accel:"2.9",price:"2.7M€",desc:"Moteur F1 hybride homologué route. 4 moteurs électriques + V6 1.6L turbo.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Mercedes-AMG_ONE_-_IAA_2021_2_%28cropped%29.jpg/1280px-Mercedes-AMG_ONE_-_IAA_2021_2_%28cropped%29.jpg"},
+  {id:20,make:"Maserati",model:"MC20",year:"2021",cat:"Supercar",flag:"🇮🇹",hp:"630",top:"325",accel:"2.9",price:"230k€",desc:"Retour aux sources pour Maserati. Moteur Nettuno V6 biturbo. Carbone et passion italienne.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Maserati_MC20_front.jpg/1280px-Maserati_MC20_front.jpg"},
+  {id:21,make:"Aston Martin",model:"Valkyrie",year:"2021",cat:"Hypercar",flag:"🇬🇧",hp:"1160",top:"402",accel:"2.5",price:"3.2M€",desc:"Conçu par Adrian Newey. V12 Cosworth + KERS. Formule 1 légale sur route.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Aston_Martin_Valkyrie_Goodwood_2021.jpg/1280px-Aston_Martin_Valkyrie_Goodwood_2021.jpg"},
+  {id:22,make:"Ferrari",model:"F40",year:"1992",cat:"Légendaire",flag:"🇮🇹",hp:"478",top:"324",accel:"3.9",price:"1.8M€",desc:"Dernière Ferrari signée par Enzo. Aucun luxe, aucune concession. Pure et absolue.",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Ferrari_F40_1987_red_lr.jpg/1280px-Ferrari_F40_1987_red_lr.jpg"},
+];
 
-const API_KEY = "YOUR_API_NINJAS_KEY";
-const PROXY = "https://corsproxy.io/?";
+let queue=[],smashed=[],passed=0,smashedCount=0,currentCar=null,nextCar=null,isAnimating=false;
+let dragX=0,dragY=0,dragging=false,curX=0,curY=0;
+let cardCounter=0;
 
-async function getMakes() {
-  const res = await fetch(PROXY + encodeURIComponent(
-    "https://api.api-ninjas.com/v1/carmakes"
-  ), {
-    headers: { "X-Api-Key": API_KEY }
-  });
+const frontCard=document.getElementById('cFront');
+const imgFront=document.getElementById('imgFront');
+const sFront=document.getElementById('sFront');
+const vindSmash=document.getElementById('vindSmash');
+const vindPass=document.getElementById('vindPass');
+const btnPass=document.getElementById('btnPass');
+const btnSmash=document.getElementById('btnSmash');
+const toast=document.getElementById('toast');
 
-  return await res.json();
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function refill(){const c=[...CARS];shuffle(c);queue.push(...c)}
+
+function renderCard(car){
+  if(!car)return;
+  cardCounter++;
+  document.getElementById('cardNum').textContent='#'+cardCounter;
+  document.getElementById('cardFlag').textContent=car.flag;
+  document.getElementById('cardMake').textContent=car.make;
+  document.getElementById('cardModel').textContent=car.model;
+  document.getElementById('cardYear').textContent=car.year;
+  document.getElementById('cardCat').innerHTML=(car.cat==='Légendaire'?'🏆':car.cat==='Hypercar'?'⚡':car.cat==='Électrique'?'🔋':'🔥')+' '+car.cat;
+  document.getElementById('cardDesc').textContent=car.desc;
+  document.getElementById('cardStats').innerHTML=`
+    <div class="stat"><div class="stat-val">${car.hp}</div><div class="stat-label">Ch</div></div>
+    <div class="stat"><div class="stat-val">${car.accel}s</div><div class="stat-label">0-100</div></div>
+    <div class="stat"><div class="stat-val">${car.top}</div><div class="stat-label">Vmax</div></div>`;
+  sFront.style.display='block';
+  imgFront.classList.remove('visible');
+  imgFront.src='';
+  imgFront.onload=()=>{imgFront.classList.add('visible');sFront.style.display='none'};
+  imgFront.onerror=()=>{sFront.style.display='none'};
+  imgFront.src=car.img;
 }
 
-async function getModels(make) {
-  const res = await fetch(PROXY + encodeURIComponent(
-    `https://api.api-ninjas.com/v1/carmodels?make=${make.toLowerCase()}`
-  ), {
-    headers: { "X-Api-Key": API_KEY }
-  });
-
-  return await res.json();
+function init(){
+  if(queue.length<5)refill();
+  currentCar=queue.shift();
+  renderCard(currentCar);
+  if(queue.length<2)refill();
+  nextCar=queue[0];
+  const pi=new Image();pi.src=nextCar.img;
+  btnPass.disabled=false;btnSmash.disabled=false;
 }
 
-async function getCar() {
-  const makes = await getMakes();
-  const make = makes[Math.floor(Math.random() * makes.length)];
+function setButtons(d){btnPass.disabled=d;btnSmash.disabled=d}
 
-  const models = await getModels(make);
-
-  if (!models || !models.length) return getCar();
-
-  const model = models[Math.floor(Math.random() * models.length)];
-
-  return { make, model };
+let toastTimer;
+function showToast(msg,color){
+  clearTimeout(toastTimer);
+  toast.textContent=msg;
+  toast.style.borderColor=color||'#fff';
+  toast.classList.add('show');
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),1800);
 }
 
-function getImage(make, model) {
-  return `https://source.unsplash.com/800x600/?${make},${model},car`;
+function vote(type){
+  if(isAnimating)return;
+  isAnimating=true;setButtons(true);
+  if(type==='smash'){
+    smashedCount++;smashed.push(currentCar);
+    document.getElementById('smashScore').textContent=smashedCount;
+    document.getElementById('garageBadge').textContent=smashedCount;
+    showToast('😍 Smash ! '+currentCar.model,'#2a9d5c');
+    frontCard.classList.add('fly-right');
+  } else {
+    passed++;
+    document.getElementById('passScore').textContent=passed;
+    showToast('😬 Pass — '+currentCar.model,'#e63946');
+    frontCard.classList.add('fly-left');
+  }
+  setTimeout(()=>{
+    frontCard.classList.remove('fly-right','fly-left');
+    frontCard.style.transform='';vindSmash.style.opacity='0';vindPass.style.opacity='0';
+    if(queue.length<2)refill();
+    currentCar=queue.shift();
+    nextCar=queue[0];
+    const pi=new Image();if(nextCar)pi.src=nextCar.img;
+    renderCard(currentCar);
+    frontCard.classList.add('card-enter');
+    setTimeout(()=>frontCard.classList.remove('card-enter'),450);
+    isAnimating=false;setButtons(false);
+    updateGarage();
+  },400);
 }
 
-async function load() {
-  document.getElementById("loading").style.display = "block";
+frontCard.addEventListener('pointerdown',e=>{
+  if(isAnimating)return;
+  dragging=true;dragX=e.clientX;dragY=e.clientY;curX=0;curY=0;
+  frontCard.setPointerCapture(e.pointerId);
+  frontCard.style.transition='none';
+});
+frontCard.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  curX=e.clientX-dragX;curY=e.clientY-dragY;
+  const rot=curX*0.09;
+  frontCard.style.transform=`translateX(${curX}px) translateY(${curY*0.25}px) rotate(${rot}deg)`;
+  const r=Math.min(Math.abs(curX)/90,1);
+  if(curX>25){vindSmash.style.opacity=r;vindPass.style.opacity=0}
+  else if(curX<-25){vindPass.style.opacity=r;vindSmash.style.opacity=0}
+  else{vindSmash.style.opacity=0;vindPass.style.opacity=0}
+});
+frontCard.addEventListener('pointerup',()=>{
+  if(!dragging)return;dragging=false;
+  frontCard.style.transition='';
+  if(curX>90)vote('smash');
+  else if(curX<-90)vote('pass');
+  else{frontCard.style.transform='';vindSmash.style.opacity='0';vindPass.style.opacity='0';}
+});
 
-  const car = await getCar();
-
-  document.getElementById("title").innerText =
-    car.make + " " + car.model;
-
-  document.getElementById("desc").innerText =
-    "Live API Ninjas data";
-
-  document.getElementById("img").src =
-    getImage(car.make, car.model);
-
-  document.getElementById("loading").style.display = "none";
+function updateGarage(){
+  const el=document.getElementById('garageContent');
+  document.getElementById('garageCount').textContent=smashed.length+' voiture(s) smashée(s)';
+  if(!smashed.length){
+    el.innerHTML='<div class="garage-empty"><div class="icon">🏁</div><p>Ton garage est vide.<br>Commence à voter pour remplir<br>ta collection de rêve !</p></div>';
+    return;
+  }
+  el.innerHTML='<div class="garage-grid">'+smashed.map(c=>`
+    <div class="garage-card" onclick='showDetail(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+      <img src="${c.img}" alt="${c.model}" onerror="this.style.display='none'"/>
+      <div class="garage-card-overlay">
+        <div class="g-make">${c.make}</div>
+        <div class="g-model">${c.model}</div>
+        <div class="g-year">${c.year}</div>
+      </div>
+      <div class="smash-badge">♥ SMASH</div>
+    </div>`).join('')+'</div>';
 }
 
-function next() {
-  load();
+function showDetail(car){
+  if(!car)return;
+  const c=typeof car==='string'?JSON.parse(car):car;
+  document.getElementById('modalImg').src=c.img;
+  document.getElementById('modalMake').textContent=c.make+' '+c.year;
+  document.getElementById('modalName').textContent=c.model;
+  document.getElementById('modalDesc').textContent=c.desc;
+  document.getElementById('modalStats').innerHTML=`
+    <div class="modal-stat"><div class="modal-stat-val">${c.hp} ch</div><div class="modal-stat-label">Puissance</div></div>
+    <div class="modal-stat"><div class="modal-stat-val">${c.accel}s</div><div class="modal-stat-label">0-100 km/h</div></div>
+    <div class="modal-stat"><div class="modal-stat-val">${c.top} km/h</div><div class="modal-stat-label">Vmax</div></div>`;
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(e){
+  if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.add('hidden');
 }
 
-load();
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.getElementById('view-'+t).classList.add('active');
+  if(t==='garage')updateGarage();
+}
 
+init();
 </script>
-
 </body>
 </html>
