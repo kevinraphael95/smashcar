@@ -1,222 +1,83 @@
-/* ═══════════════════════════════════════
-   SMASH OR PASS — Cars Edition
-   app.js
-═══════════════════════════════════════ */
-
+/* SmashCar — app.js */
 'use strict';
 
-/* ── Car Database ────────────────────────────────────────────────────────────
-   Images sourced from reliable CDNs (Unsplash, Wikimedia direct, etc.)
-   to avoid hotlink bans & CORS issues.
-   ──────────────────────────────────────────────────────────────────────── */
+/* Images fixes : Wikimedia bloque le hotlinking direct.
+   On utilise le endpoint /wiki/Special:FilePath/ qui redirige
+   correctement, ou des proxies d'image fiables. */
+
+const IMG = {
+  LaFerrari:       'https://upload.wikimedia.org/wikipedia/commons/8/82/Ferrari_LaFerrari.jpg',
+  AventadorSVJ:    'https://upload.wikimedia.org/wikipedia/commons/a/a0/Lamborghini_Aventador_SVJ_-_2019_%28cropped%29.jpg',
+  VeyronSS:        'https://upload.wikimedia.org/wikipedia/commons/8/89/Bugatti_Veyron_16.4_Super_Sport_-_Flickr_-_Alexandre_Pr%C3%A9vot_%281_of_3%29.jpg',
+  McLarenP1:       'https://upload.wikimedia.org/wikipedia/commons/0/0c/McLaren_P1_-_Goodwood_Festival_of_Speed_2013_%288985601519%29.jpg',
+  Porsche918:      'https://upload.wikimedia.org/wikipedia/commons/7/75/Porsche_918_Spyder_-_Mondial_de_l%27Automobile_de_Paris_2014_-_002.jpg',
+  AgeraRS:         'https://upload.wikimedia.org/wikipedia/commons/8/8b/Koenigsegg_Agera_%28Goodwood_2012%29.jpg',
+  Huayra:          'https://upload.wikimedia.org/wikipedia/commons/3/32/Pagani_Huayra_-_Goodwood_Festival_of_Speed_2012_%287539562906%29.jpg',
+  FerEnzo:         'https://upload.wikimedia.org/wikipedia/commons/3/39/Ferrari_Enzo_Ferrari.JPG',
+  MurcielagoLp:    'https://upload.wikimedia.org/wikipedia/commons/e/ed/Lamborghini_Murchielago_LP_670-4_SuperVeloce_%28Ank_Kumar%29.jpg',
+  AstonOne77:      'https://upload.wikimedia.org/wikipedia/commons/f/fc/Aston_Martin_One-77_%28Ank_Kumar%29_06.jpg',
+  McLarenF1:       'https://upload.wikimedia.org/wikipedia/commons/d/d6/McLaren_F1_LM_%2B_McLaren_F1%2C_Donington_2012_%287629596148%29.jpg',
+  Chiron:          'https://upload.wikimedia.org/wikipedia/commons/9/99/Bugatti_Chiron_2019_trimmed.jpg',
+  F488Pista:       'https://upload.wikimedia.org/wikipedia/commons/6/60/2019_Ferrari_488_Pista_%28facelift%2C_red%29%2C_front_8.15.19.jpg',
+  HuracanEVO:      'https://upload.wikimedia.org/wikipedia/commons/1/10/2019_Lamborghini_Huracan_Evo_%28facelift%2C_yellow%29%2C_front_8.15.19.jpg',
+  Nevera:          'https://upload.wikimedia.org/wikipedia/commons/6/6a/Rimac_Nevera_Spa-Francorchamps_2022.jpg',
+  FordGT:          'https://upload.wikimedia.org/wikipedia/commons/4/4e/2017_Ford_GT_-_front_%28Reg%29.jpg',
+  CorvetteZ06:     'https://upload.wikimedia.org/wikipedia/commons/1/12/2023_Chevrolet_Corvette_Z06_in_Rapid_Blue%2C_front_11.19.22.jpg',
+  GT3RS:           'https://upload.wikimedia.org/wikipedia/commons/c/ca/Porsche_911_GT3_RS_%28992%29_-_front%2C_Autoshow_Brussels_2023.jpg',
+  AmgOne:          'https://upload.wikimedia.org/wikipedia/commons/c/c1/Mercedes-AMG_ONE_-_IAA_2021_2_%28cropped%29.jpg',
+  MC20:            'https://upload.wikimedia.org/wikipedia/commons/7/7c/Maserati_MC20_front.jpg',
+  Valkyrie:        'https://upload.wikimedia.org/wikipedia/commons/1/11/Aston_Martin_Valkyrie_Goodwood_2021.jpg',
+  F40:             'https://upload.wikimedia.org/wikipedia/commons/e/e6/Ferrari_F40_1987_red_lr.jpg',
+};
+
+/* Proxy Wikimedia : contourne le hotlink ban */
+function wikiProxy(url) {
+  /* On passe par wsrv.nl qui respecte les headers Referer */
+  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=800&output=webp&q=80`;
+}
+
 const CARS = [
-  {
-    id: 1,
-    make: 'Ferrari', model: 'LaFerrari', year: '2015',
-    cat: 'Hypercar', flag: '🇮🇹',
-    hp: '963', top: '350', accel: '2.4', price: '1.4 M€',
-    desc: 'Le sommet technologique de Maranello : V12 + moteur électrique KERS. Seulement 499 exemplaires.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Ferrari_LaFerrari.jpg/960px-Ferrari_LaFerrari.jpg'
-  },
-  {
-    id: 2,
-    make: 'Lamborghini', model: 'Aventador SVJ', year: '2019',
-    cat: 'Supercar', flag: '🇮🇹',
-    hp: '770', top: '351', accel: '2.8', price: '460 k€',
-    desc: 'V12 naturellement aspiré, ALA 2.0 aérodynamique active. Record Nürburgring en production.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Lamborghini_Aventador_SVJ_-_2019_%28cropped%29.jpg/960px-Lamborghini_Aventador_SVJ_-_2019_%28cropped%29.jpg'
-  },
-  {
-    id: 3,
-    make: 'Bugatti', model: 'Veyron SS', year: '2012',
-    cat: 'Hypercar', flag: '🇫🇷',
-    hp: '1200', top: '431', accel: '2.5', price: '1.9 M€',
-    desc: '16 cylindres, 4 turbos. Ex-voiture de série la plus rapide du monde à 431 km/h.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Bugatti_Veyron_16.4_Super_Sport_-_Flickr_-_Alexandre_Pr%C3%A9vot_%281_of_3%29.jpg/960px-Bugatti_Veyron_16.4_Super_Sport_-_Flickr_-_Alexandre_Pr%C3%A9vot_%281_of_3%29.jpg'
-  },
-  {
-    id: 4,
-    make: 'McLaren', model: 'P1', year: '2013',
-    cat: 'Hypercar', flag: '🇬🇧',
-    hp: '916', top: '350', accel: '2.8', price: '1.1 M€',
-    desc: 'Hybride révolutionnaire combinant V8 twin-turbo et moteur électrique. Successeur de la F1.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/McLaren_P1_-_Goodwood_Festival_of_Speed_2013_%288985601519%29.jpg/960px-McLaren_P1_-_Goodwood_Festival_of_Speed_2013_%288985601519%29.jpg'
-  },
-  {
-    id: 5,
-    make: 'Porsche', model: '918 Spyder', year: '2014',
-    cat: 'Hypercar', flag: '🇩🇪',
-    hp: '887', top: '345', accel: '2.5', price: '780 k€',
-    desc: 'Triple motorisation, record au Nürburgring. La Sainte Trinité des hypercars hybrides.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Porsche_918_Spyder_-_Mondial_de_l%27Automobile_de_Paris_2014_-_002.jpg/960px-Porsche_918_Spyder_-_Mondial_de_l%27Automobile_de_Paris_2014_-_002.jpg'
-  },
-  {
-    id: 6,
-    make: 'Koenigsegg', model: 'Agera RS', year: '2017',
-    cat: 'Hypercar', flag: '🇸🇪',
-    hp: '1360', top: '458', accel: '2.8', price: '2.1 M€',
-    desc: 'Détenteur de 5 records mondiaux. 458 km/h sur route fermée en Nevada. Suédois pur.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Koenigsegg_Agera_%28Goodwood_2012%29.jpg/960px-Koenigsegg_Agera_%28Goodwood_2012%29.jpg'
-  },
-  {
-    id: 7,
-    make: 'Pagani', model: 'Huayra', year: '2012',
-    cat: 'Hypercar', flag: '🇮🇹',
-    hp: '730', top: '370', accel: '3.3', price: '1.4 M€',
-    desc: 'Chef-d\'œuvre artisanal argentin-italien. Carbone titane, Mercedes AMG V12 biturbo.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Pagani_Huayra_-_Goodwood_Festival_of_Speed_2012_%287539562906%29.jpg/960px-Pagani_Huayra_-_Goodwood_Festival_of_Speed_2012_%287539562906%29.jpg'
-  },
-  {
-    id: 8,
-    make: 'Ferrari', model: 'Enzo', year: '2003',
-    cat: 'Supercar', flag: '🇮🇹',
-    hp: '660', top: '355', accel: '3.6', price: '3 M€',
-    desc: 'Technologie F1 pour la route. 400 unités produites. Icône absolue de Maranello.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Ferrari_Enzo_Ferrari.JPG/960px-Ferrari_Enzo_Ferrari.JPG'
-  },
-  {
-    id: 9,
-    make: 'Lamborghini', model: 'Murciélago LP670', year: '2009',
-    cat: 'Supercar', flag: '🇮🇹',
-    hp: '670', top: '342', accel: '3.2', price: '450 k€',
-    desc: 'V12 6.5L à couper le souffle. Le SuperVeloce ultime avant l\'Aventador. Légende.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Lamborghini_Murchielago_LP_670-4_SuperVeloce_%28Ank_Kumar%29.jpg/960px-Lamborghini_Murchielago_LP_670-4_SuperVeloce_%28Ank_Kumar%29.jpg'
-  },
-  {
-    id: 10,
-    make: 'Aston Martin', model: 'One-77', year: '2011',
-    cat: 'Hypercar', flag: '🇬🇧',
-    hp: '750', top: '354', accel: '3.5', price: '1.4 M€',
-    desc: '77 exemplaires, carrosserie en fibre de carbone. V12 atmosphérique le plus puissant de série.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Aston_Martin_One-77_%28Ank_Kumar%29_06.jpg/960px-Aston_Martin_One-77_%28Ank_Kumar%29_06.jpg'
-  },
-  {
-    id: 11,
-    make: 'McLaren', model: 'F1', year: '1994',
-    cat: 'Légendaire', flag: '🇬🇧',
-    hp: '627', top: '386', accel: '3.2', price: '20 M€',
-    desc: 'Gordon Murray. V12 BMW. Siège conducteur central. Longtemps la voiture la plus rapide du monde.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/McLaren_F1_LM_%2B_McLaren_F1%2C_Donington_2012_%287629596148%29.jpg/960px-McLaren_F1_LM_%2B_McLaren_F1%2C_Donington_2012_%287629596148%29.jpg'
-  },
-  {
-    id: 12,
-    make: 'Bugatti', model: 'Chiron', year: '2017',
-    cat: 'Hypercar', flag: '🇫🇷',
-    hp: '1500', top: '420', accel: '2.4', price: '3 M€',
-    desc: 'Successeur de la Veyron. W16 quad-turbo. 1500 chevaux et un luxe insondable.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Bugatti_Chiron_2019_trimmed.jpg/960px-Bugatti_Chiron_2019_trimmed.jpg'
-  },
-  {
-    id: 13,
-    make: 'Ferrari', model: '488 Pista', year: '2018',
-    cat: 'Supercar', flag: '🇮🇹',
-    hp: '720', top: '340', accel: '2.85', price: '280 k€',
-    desc: 'Version piste de la 488 : 50 kg de moins, 50 ch de plus. Polyvalence et brutalité.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/2019_Ferrari_488_Pista_%28facelift%2C_red%29%2C_front_8.15.19.jpg/960px-2019_Ferrari_488_Pista_%28facelift%2C_red%29%2C_front_8.15.19.jpg'
-  },
-  {
-    id: 14,
-    make: 'Lamborghini', model: 'Huracán EVO', year: '2020',
-    cat: 'Supercar', flag: '🇮🇹',
-    hp: '640', top: '325', accel: '2.9', price: '215 k€',
-    desc: 'V10 5.2L, 4WD, ALA actif. Le quotidien de rêve des supercars italiennes.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/2019_Lamborghini_Huracan_Evo_%28facelift%2C_yellow%29%2C_front_8.15.19.jpg/960px-2019_Lamborghini_Huracan_Evo_%28facelift%2C_yellow%29%2C_front_8.15.19.jpg'
-  },
-  {
-    id: 15,
-    make: 'Rimac', model: 'Nevera', year: '2022',
-    cat: 'Électrique', flag: '🇭🇷',
-    hp: '1914', top: '412', accel: '1.97', price: '2.2 M€',
-    desc: '1914 ch électriques. 0–100 en 1.97 s. La voiture de production la plus rapide jamais construite.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Rimac_Nevera_Spa-Francorchamps_2022.jpg/960px-Rimac_Nevera_Spa-Francorchamps_2022.jpg'
-  },
-  {
-    id: 16,
-    make: 'Ford', model: 'GT', year: '2017',
-    cat: 'Supercar', flag: '🇺🇸',
-    hp: '647', top: '347', accel: '3.1', price: '500 k€',
-    desc: 'Rend hommage au légendaire GT40 vainqueur du Mans en 1966. Aéro inspirée F1.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/2017_Ford_GT_-_front_%28Reg%29.jpg/960px-2017_Ford_GT_-_front_%28Reg%29.jpg'
-  },
-  {
-    id: 17,
-    make: 'Chevrolet', model: 'Corvette Z06', year: '2023',
-    cat: 'Supercar', flag: '🇺🇸',
-    hp: '670', top: '312', accel: '2.6', price: '110 k€',
-    desc: 'Flat-plane V8 à moteur central. Agressivité américaine au prix d\'une compacte européenne.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/2023_Chevrolet_Corvette_Z06_in_Rapid_Blue%2C_front_11.19.22.jpg/960px-2023_Chevrolet_Corvette_Z06_in_Rapid_Blue%2C_front_11.19.22.jpg'
-  },
-  {
-    id: 18,
-    make: 'Porsche', model: '911 GT3 RS', year: '2022',
-    cat: 'Supercar', flag: '🇩🇪',
-    hp: '525', top: '296', accel: '3.2', price: '230 k€',
-    desc: 'Flat-6 atmosphérique, boîte PDK, aileron immense. La perfection selon Stuttgart.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Porsche_911_GT3_RS_%28992%29_-_front%2C_Autoshow_Brussels_2023.jpg/960px-Porsche_911_GT3_RS_%28992%29_-_front%2C_Autoshow_Brussels_2023.jpg'
-  },
-  {
-    id: 19,
-    make: 'Mercedes-AMG', model: 'ONE', year: '2023',
-    cat: 'Hypercar', flag: '🇩🇪',
-    hp: '1063', top: '352', accel: '2.9', price: '2.7 M€',
-    desc: 'Moteur F1 hybride homologué route. 4 moteurs électriques + V6 1.6L turbo.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Mercedes-AMG_ONE_-_IAA_2021_2_%28cropped%29.jpg/960px-Mercedes-AMG_ONE_-_IAA_2021_2_%28cropped%29.jpg'
-  },
-  {
-    id: 20,
-    make: 'Maserati', model: 'MC20', year: '2021',
-    cat: 'Supercar', flag: '🇮🇹',
-    hp: '630', top: '325', accel: '2.9', price: '230 k€',
-    desc: 'Retour aux sources pour Maserati. Moteur Nettuno V6 biturbo. Carbone et passion italienne.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Maserati_MC20_front.jpg/960px-Maserati_MC20_front.jpg'
-  },
-  {
-    id: 21,
-    make: 'Aston Martin', model: 'Valkyrie', year: '2021',
-    cat: 'Hypercar', flag: '🇬🇧',
-    hp: '1160', top: '402', accel: '2.5', price: '3.2 M€',
-    desc: 'Conçu par Adrian Newey. V12 Cosworth + KERS. Formule 1 légale sur route.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Aston_Martin_Valkyrie_Goodwood_2021.jpg/960px-Aston_Martin_Valkyrie_Goodwood_2021.jpg'
-  },
-  {
-    id: 22,
-    make: 'Ferrari', model: 'F40', year: '1992',
-    cat: 'Légendaire', flag: '🇮🇹',
-    hp: '478', top: '324', accel: '3.9', price: '1.8 M€',
-    desc: 'Dernière Ferrari signée par Enzo. Aucun luxe, aucune concession. Pure et absolue.',
-    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Ferrari_F40_1987_red_lr.jpg/960px-Ferrari_F40_1987_red_lr.jpg'
-  }
+  { id:1,  make:'Ferrari',        model:'LaFerrari',       year:'2015', cat:'Hypercar',   flag:'🇮🇹', hp:'963',  top:'350', accel:'2.4', price:'1,4 M€', desc:'V12 + moteur électrique KERS. 499 exemplaires, le summum de Maranello.', img: wikiProxy(IMG.LaFerrari) },
+  { id:2,  make:'Lamborghini',    model:'Aventador SVJ',   year:'2019', cat:'Supercar',   flag:'🇮🇹', hp:'770',  top:'351', accel:'2.8', price:'460 k€', desc:'V12 atmosphérique, ALA 2.0 actif. Record Nürburgring en production.', img: wikiProxy(IMG.AventadorSVJ) },
+  { id:3,  make:'Bugatti',        model:'Veyron SS',       year:'2012', cat:'Hypercar',   flag:'🇫🇷', hp:'1200', top:'431', accel:'2.5', price:'1,9 M€', desc:'W16, 4 turbos. Ex-voiture de série la plus rapide du monde à 431 km/h.', img: wikiProxy(IMG.VeyronSS) },
+  { id:4,  make:'McLaren',        model:'P1',              year:'2013', cat:'Hypercar',   flag:'🇬🇧', hp:'916',  top:'350', accel:'2.8', price:'1,1 M€', desc:'Hybride V8 twin-turbo + électrique. Successeur spirituel de la F1.', img: wikiProxy(IMG.McLarenP1) },
+  { id:5,  make:'Porsche',        model:'918 Spyder',      year:'2014', cat:'Hypercar',   flag:'🇩🇪', hp:'887',  top:'345', accel:'2.5', price:'780 k€', desc:'Triple motorisation. La Sainte Trinité des hypercars hybrides.', img: wikiProxy(IMG.Porsche918) },
+  { id:6,  make:'Koenigsegg',     model:'Agera RS',        year:'2017', cat:'Hypercar',   flag:'🇸🇪', hp:'1360', top:'458', accel:'2.8', price:'2,1 M€', desc:'5 records mondiaux. 458 km/h sur route fermée au Nevada.', img: wikiProxy(IMG.AgeraRS) },
+  { id:7,  make:'Pagani',         model:'Huayra',          year:'2012', cat:'Hypercar',   flag:'🇮🇹', hp:'730',  top:'370', accel:'3.3', price:'1,4 M€', desc:'Chef-d\'œuvre artisanal. Carbo-titane, V12 biturbo AMG.', img: wikiProxy(IMG.Huayra) },
+  { id:8,  make:'Ferrari',        model:'Enzo',            year:'2003', cat:'Supercar',   flag:'🇮🇹', hp:'660',  top:'355', accel:'3.6', price:'3 M€',   desc:'Technologie F1 pour la route. 400 unités. Icône de Maranello.', img: wikiProxy(IMG.FerEnzo) },
+  { id:9,  make:'Lamborghini',    model:'Murciélago LP670',year:'2009', cat:'Supercar',   flag:'🇮🇹', hp:'670',  top:'342', accel:'3.2', price:'450 k€', desc:'V12 6.5L. Le SuperVeloce ultime avant l\'Aventador.', img: wikiProxy(IMG.MurcielagoLp) },
+  { id:10, make:'Aston Martin',   model:'One-77',          year:'2011', cat:'Hypercar',   flag:'🇬🇧', hp:'750',  top:'354', accel:'3.5', price:'1,4 M€', desc:'77 exemplaires, carbone. V12 atmo le plus puissant de série.', img: wikiProxy(IMG.AstonOne77) },
+  { id:11, make:'McLaren',        model:'F1',              year:'1994', cat:'Légendaire', flag:'🇬🇧', hp:'627',  top:'386', accel:'3.2', price:'20 M€',  desc:'Gordon Murray. V12 BMW. Siège central. Longtemps la plus rapide du monde.', img: wikiProxy(IMG.McLarenF1) },
+  { id:12, make:'Bugatti',        model:'Chiron',          year:'2017', cat:'Hypercar',   flag:'🇫🇷', hp:'1500', top:'420', accel:'2.4', price:'3 M€',   desc:'Successeur de la Veyron. W16 quad-turbo. 1500 ch et luxe absolu.', img: wikiProxy(IMG.Chiron) },
+  { id:13, make:'Ferrari',        model:'488 Pista',       year:'2018', cat:'Supercar',   flag:'🇮🇹', hp:'720',  top:'340', accel:'2.85',price:'280 k€', desc:'Version piste : -50 kg, +50 ch. Polyvalence et brutalité.', img: wikiProxy(IMG.F488Pista) },
+  { id:14, make:'Lamborghini',    model:'Huracán EVO',     year:'2020', cat:'Supercar',   flag:'🇮🇹', hp:'640',  top:'325', accel:'2.9', price:'215 k€', desc:'V10 5.2L, 4WD, ALA actif. Le quotidien de rêve.', img: wikiProxy(IMG.HuracanEVO) },
+  { id:15, make:'Rimac',          model:'Nevera',          year:'2022', cat:'Électrique', flag:'🇭🇷', hp:'1914', top:'412', accel:'1.97',price:'2,2 M€', desc:'1914 ch électriques. 0-100 en 1.97 s. La plus rapide jamais produite.', img: wikiProxy(IMG.Nevera) },
+  { id:16, make:'Ford',           model:'GT',              year:'2017', cat:'Supercar',   flag:'🇺🇸', hp:'647',  top:'347', accel:'3.1', price:'500 k€', desc:'Hommage au GT40 vainqueur du Mans 1966. Aéro F1.', img: wikiProxy(IMG.FordGT) },
+  { id:17, make:'Chevrolet',      model:'Corvette Z06',    year:'2023', cat:'Supercar',   flag:'🇺🇸', hp:'670',  top:'312', accel:'2.6', price:'110 k€', desc:'Flat-plane V8 central. Agressivité américaine à prix européen.', img: wikiProxy(IMG.CorvetteZ06) },
+  { id:18, make:'Porsche',        model:'911 GT3 RS',      year:'2022', cat:'Supercar',   flag:'🇩🇪', hp:'525',  top:'296', accel:'3.2', price:'230 k€', desc:'Flat-6 atmo, PDK, aileron immense. La perfection selon Stuttgart.', img: wikiProxy(IMG.GT3RS) },
+  { id:19, make:'Mercedes-AMG',   model:'ONE',             year:'2023', cat:'Hypercar',   flag:'🇩🇪', hp:'1063', top:'352', accel:'2.9', price:'2,7 M€', desc:'Moteur F1 homologué route. V6 1.6L turbo + 4 moteurs élec.', img: wikiProxy(IMG.AmgOne) },
+  { id:20, make:'Maserati',       model:'MC20',            year:'2021', cat:'Supercar',   flag:'🇮🇹', hp:'630',  top:'325', accel:'2.9', price:'230 k€', desc:'Retour aux sources. V6 Nettuno biturbo. Passion italienne.', img: wikiProxy(IMG.MC20) },
+  { id:21, make:'Aston Martin',   model:'Valkyrie',        year:'2021', cat:'Hypercar',   flag:'🇬🇧', hp:'1160', top:'402', accel:'2.5', price:'3,2 M€', desc:'Conçu par Adrian Newey. V12 Cosworth + KERS. F1 légale.', img: wikiProxy(IMG.Valkyrie) },
+  { id:22, make:'Ferrari',        model:'F40',             year:'1992', cat:'Légendaire', flag:'🇮🇹', hp:'478',  top:'324', accel:'3.9', price:'1,8 M€', desc:'Dernière Ferrari signée par Enzo. Zéro luxe. Pure et absolue.', img: wikiProxy(IMG.F40) },
 ];
 
-/* ── State ───────────────────────────── */
-let queue        = [];
-let smashed      = [];
-let passedCount  = 0;
-let smashedCount = 0;
-let currentCar   = null;
-let isAnimating  = false;
-let cardCounter  = 0;
+/* ── State ── */
+let queue = [], smashed = [];
+let passedCount = 0, smashedCount = 0;
+let currentCar = null, isAnimating = false, cardCounter = 0;
+let dragging = false, dragStartX = 0, dragStartY = 0, curDeltaX = 0, curDeltaY = 0;
 
-/* Drag state */
-let dragging = false;
-let dragStartX = 0;
-let dragStartY = 0;
-let curDeltaX  = 0;
-let curDeltaY  = 0;
+/* ── DOM refs ── */
+const frontCard = document.getElementById('cFront');
+const imgFront  = document.getElementById('imgFront');
+const sFront    = document.getElementById('sFront');
+const vindSmash = document.getElementById('vindSmash');
+const vindPass  = document.getElementById('vindPass');
+const btnPass   = document.getElementById('btnPass');
+const btnSmash  = document.getElementById('btnSmash');
+const toastEl   = document.getElementById('toast');
 
-/* ── DOM refs ────────────────────────── */
-const frontCard  = document.getElementById('cFront');
-const imgFront   = document.getElementById('imgFront');
-const sFront     = document.getElementById('sFront');
-const vindSmash  = document.getElementById('vindSmash');
-const vindPass   = document.getElementById('vindPass');
-const btnPass    = document.getElementById('btnPass');
-const btnSmash   = document.getElementById('btnSmash');
-const toastEl    = document.getElementById('toast');
-
-/* ── Utilities ───────────────────────── */
-
-/** Fisher-Yates shuffle (in-place, returns array) */
+/* ── Utils ── */
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -226,18 +87,15 @@ function shuffle(arr) {
 }
 
 function catIcon(cat) {
-  const MAP = { Légendaire: '🏆', Hypercar: '⚡', Électrique: '🔋' };
-  return MAP[cat] ?? '🔥';
+  return { Légendaire: '🏆', Hypercar: '⚡', Électrique: '🔋' }[cat] ?? '🔥';
 }
 
-/** Preload an image URL without attaching it to the DOM */
 function preload(url) {
   if (!url) return;
-  const img = new Image();
-  img.src = url;
+  new Image().src = url;
 }
 
-let toastTimer = null;
+let toastTimer;
 function showToast(msg, color) {
   clearTimeout(toastTimer);
   toastEl.textContent = msg;
@@ -247,75 +105,54 @@ function showToast(msg, color) {
 }
 
 function setButtons(disabled) {
-  btnPass.disabled  = disabled;
-  btnSmash.disabled = disabled;
+  btnPass.disabled = btnSmash.disabled = disabled;
 }
 
-/* ── Queue Management ────────────────── */
-
+/* ── Queue ── */
 function refill() {
-  const copy = [...CARS];
-  shuffle(copy);
-  queue.push(...copy);
+  queue.push(...shuffle([...CARS]));
 }
 
 function ensureQueue(min = 4) {
   if (queue.length < min) refill();
 }
 
-/* ── Card Rendering ──────────────────── */
-
+/* ── Render ── */
 function renderCard(car) {
   if (!car) return;
-
   cardCounter++;
   document.getElementById('cardNum').textContent  = `#${cardCounter}`;
   document.getElementById('cardFlag').textContent  = car.flag;
   document.getElementById('cardMake').textContent  = car.make;
   document.getElementById('cardModel').textContent = car.model;
   document.getElementById('cardYear').textContent  = car.year;
-  document.getElementById('cardCat').innerHTML     = `${catIcon(car.cat)} ${car.cat}`;
+  document.getElementById('cardCat').textContent   = `${catIcon(car.cat)} ${car.cat}`;
   document.getElementById('cardDesc').textContent  = car.desc;
 
   document.getElementById('cardStats').innerHTML = `
-    <div class="stat">
-      <div class="stat-val">${car.hp}</div>
-      <div class="stat-label">Ch</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val">${car.accel}s</div>
-      <div class="stat-label">0–100</div>
-    </div>
-    <div class="stat">
-      <div class="stat-val">${car.top}</div>
-      <div class="stat-label">km/h max</div>
-    </div>`;
+    <div class="stat"><div class="stat-val">${car.hp}</div><div class="stat-label">Ch</div></div>
+    <div class="stat"><div class="stat-val">${car.accel}s</div><div class="stat-label">0–100</div></div>
+    <div class="stat"><div class="stat-val">${car.top}</div><div class="stat-label">km/h max</div></div>`;
 
-  /* Reset image */
   sFront.style.display = 'block';
   imgFront.classList.remove('visible');
   imgFront.src = '';
-
   imgFront.onload  = () => { imgFront.classList.add('visible'); sFront.style.display = 'none'; };
   imgFront.onerror = () => { sFront.style.display = 'none'; };
   imgFront.src = car.img;
 }
 
-/* ── Game Init ───────────────────────── */
-
+/* ── Init ── */
 function init() {
   ensureQueue(5);
   currentCar = queue.shift();
   renderCard(currentCar);
-
   ensureQueue(2);
   preload(queue[0]?.img);
-
   setButtons(false);
 }
 
-/* ── Vote / Swipe Logic ──────────────── */
-
+/* ── Vote ── */
 function vote(type) {
   if (isAnimating) return;
   isAnimating = true;
@@ -326,7 +163,7 @@ function vote(type) {
     smashed.push(currentCar);
     document.getElementById('smashScore').textContent  = smashedCount;
     document.getElementById('garageBadge').textContent = smashedCount;
-    showToast(`😍 Smash ! ${currentCar.model}`, '#2a9d5c');
+    showToast(`😍 Smash — ${currentCar.model}`, '#2a9d5c');
     frontCard.classList.add('fly-right');
   } else {
     passedCount++;
@@ -336,17 +173,14 @@ function vote(type) {
   }
 
   setTimeout(() => {
-    /* Reset card */
     frontCard.classList.remove('fly-right', 'fly-left');
     frontCard.style.transform = '';
     vindSmash.style.opacity   = '0';
     vindPass.style.opacity    = '0';
 
-    /* Advance queue */
     ensureQueue(2);
     currentCar = queue.shift();
     preload(queue[0]?.img);
-
     renderCard(currentCar);
     frontCard.classList.add('card-enter');
     setTimeout(() => frontCard.classList.remove('card-enter'), 450);
@@ -357,15 +191,13 @@ function vote(type) {
   }, 400);
 }
 
-/* ── Drag / Swipe ────────────────────── */
-
+/* ── Drag ── */
 frontCard.addEventListener('pointerdown', (e) => {
   if (isAnimating) return;
-  dragging   = true;
+  dragging = true;
   dragStartX = e.clientX;
   dragStartY = e.clientY;
-  curDeltaX  = 0;
-  curDeltaY  = 0;
+  curDeltaX = curDeltaY = 0;
   frontCard.setPointerCapture(e.pointerId);
   frontCard.style.transition = 'none';
 });
@@ -374,7 +206,6 @@ frontCard.addEventListener('pointermove', (e) => {
   if (!dragging) return;
   curDeltaX = e.clientX - dragStartX;
   curDeltaY = e.clientY - dragStartY;
-
   const rot = curDeltaX * 0.09;
   frontCard.style.transform = `translateX(${curDeltaX}px) translateY(${curDeltaY * 0.25}px) rotate(${rot}deg)`;
 
@@ -386,8 +217,7 @@ frontCard.addEventListener('pointermove', (e) => {
     vindPass.style.opacity  = ratio;
     vindSmash.style.opacity = '0';
   } else {
-    vindSmash.style.opacity = '0';
-    vindPass.style.opacity  = '0';
+    vindSmash.style.opacity = vindPass.style.opacity = '0';
   }
 });
 
@@ -395,28 +225,21 @@ frontCard.addEventListener('pointerup', () => {
   if (!dragging) return;
   dragging = false;
   frontCard.style.transition = '';
-
   if      (curDeltaX >  90) vote('smash');
   else if (curDeltaX < -90) vote('pass');
   else {
     frontCard.style.transform = '';
-    vindSmash.style.opacity   = '0';
-    vindPass.style.opacity    = '0';
+    vindSmash.style.opacity = vindPass.style.opacity = '0';
   }
 });
 
-/* Cancel drag on pointer leave (edge-case UX fix) */
 frontCard.addEventListener('pointercancel', () => {
-  if (!dragging) return;
   dragging = false;
-  frontCard.style.transition = '';
-  frontCard.style.transform  = '';
-  vindSmash.style.opacity    = '0';
-  vindPass.style.opacity     = '0';
+  frontCard.style.transition = frontCard.style.transform = '';
+  vindSmash.style.opacity = vindPass.style.opacity = '0';
 });
 
-/* ── Keyboard Support ────────────────── */
-
+/* ── Keyboard ── */
 document.addEventListener('keydown', (e) => {
   if (isAnimating) return;
   if (document.getElementById('view-game').classList.contains('active')) {
@@ -427,51 +250,55 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
 
-/* ── Garage ──────────────────────────── */
-
+/* ── Garage ── */
 function syncGarage() {
   const el    = document.getElementById('garageContent');
   const count = document.getElementById('garageCount');
-  count.textContent = `${smashed.length} voiture(s) smashée(s)`;
+  count.textContent = `${smashed.length} voiture(s)`;
 
   if (!smashed.length) {
     el.innerHTML = `
       <div class="garage-empty">
-        <div class="icon">🏁</div>
-        <p>Ton garage est vide.<br>Commence à voter pour remplir<br>ta collection de rêve !</p>
+        <div class="empty-icon">🏁</div>
+        <p>Ton garage est vide.<br>Commence à voter pour remplir ta collection !</p>
       </div>`;
     return;
   }
 
-  el.innerHTML = `
-    <div class="garage-grid">
-      ${smashed.map(c => `
-        <div class="garage-card" role="button" tabindex="0"
-             onclick='showDetail(${JSON.stringify(c).replace(/'/g, "&#39;")})'
-             onkeydown='if(event.key==="Enter")showDetail(${JSON.stringify(c).replace(/'/g, "&#39;")})'>
-          <img src="${c.img}" alt="${c.make} ${c.model}" loading="lazy" onerror="this.style.display='none'"/>
-          <div class="garage-card-overlay">
-            <div class="g-make">${c.make}</div>
-            <div class="g-model">${c.model}</div>
-            <div class="g-year">${c.year}</div>
-          </div>
-          <div class="smash-badge">♥ SMASH</div>
-        </div>`).join('')}
+  el.innerHTML = `<div class="garage-grid">${smashed.map(c => garageCardHTML(c)).join('')}</div>`;
+}
+
+function garageCardHTML(c) {
+  const data = encodeURIComponent(JSON.stringify(c));
+  return `
+    <div class="garage-card" role="button" tabindex="0"
+         onclick="showDetailEncoded('${data}')"
+         onkeydown="if(event.key==='Enter')showDetailEncoded('${data}')">
+      <img class="garage-card-img"
+           src="${c.img}"
+           alt="${c.make} ${c.model}"
+           loading="lazy"
+           onerror="this.outerHTML='<div class=\\'garage-card-img-fallback\\'>🚗</div>'"/>
+      <div class="garage-card-overlay">
+        <div class="g-make">${c.make}</div>
+        <div class="g-model">${c.model}</div>
+        <div class="g-year">${c.year}</div>
+      </div>
+      <div class="smash-badge">♥ SMASH</div>
     </div>`;
 }
 
-/* ── Detail Modal ────────────────────── */
-
-/** Open detail for the current front card */
+/* ── Modal ── */
 function openDetail() {
   if (currentCar) showDetail(currentCar);
 }
 
-/** Open detail for any car (called from garage cards with serialised JSON string) */
-function showDetail(carOrString) {
-  const c = (typeof carOrString === 'string') ? JSON.parse(carOrString) : carOrString;
+function showDetailEncoded(encoded) {
+  showDetail(JSON.parse(decodeURIComponent(encoded)));
+}
 
-  document.getElementById('modalImg').src         = c.img;
+function showDetail(c) {
+  document.getElementById('modalImg').src          = c.img;
   document.getElementById('modalMake').textContent = `${c.make} · ${c.year}`;
   document.getElementById('modalName').textContent = c.model;
   document.getElementById('modalDesc').textContent = c.desc;
@@ -493,32 +320,27 @@ function showDetail(carOrString) {
     </div>`;
 
   document.getElementById('modal').classList.remove('hidden');
-  document.getElementById('modal').focus();
 }
 
 function closeModal() {
   document.getElementById('modal').classList.add('hidden');
 }
 
-/* Close on backdrop click */
 document.getElementById('modal').addEventListener('click', (e) => {
   if (e.target === document.getElementById('modal')) closeModal();
 });
 
-/* ── Tab Switching ───────────────────── */
-
+/* ── Tabs ── */
 function switchTab(tabId) {
   document.querySelectorAll('.tab').forEach(btn => {
     btn.classList.toggle('active', btn.id === `tab-${tabId}`);
     btn.setAttribute('aria-selected', btn.id === `tab-${tabId}` ? 'true' : 'false');
   });
-
   document.querySelectorAll('.view').forEach(view => {
     view.classList.toggle('active', view.id === `view-${tabId}`);
   });
-
   if (tabId === 'garage') syncGarage();
 }
 
-/* ── Bootstrap ───────────────────────── */
+/* ── Boot ── */
 init();
