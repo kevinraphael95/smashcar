@@ -11,30 +11,31 @@
 </head>
 <body>
 
-  <div class="header">
+  <header class="header">
     <div class="logo">SmashCar</div>
-  </div>
+    <div class="tagline">Smash or Pass · Édition Supercar</div>
+  </header>
 
-  <div class="tabs" role="tablist">
+  <nav class="tabs" role="tablist">
     <button class="tab active" role="tab" aria-selected="true"  onclick="switchTab('game')"   id="tab-game">🏁 Vote</button>
     <button class="tab"        role="tab" aria-selected="false" onclick="switchTab('garage')" id="tab-garage">
       🏎 Garage <span class="badge" id="garageBadge">0</span>
     </button>
-  </div>
+  </nav>
 
-  <!-- ══════════════ GAME VIEW ══════════════ -->
+  <!-- GAME VIEW -->
   <section class="view active" id="view-game" role="tabpanel">
 
     <div class="scorebar">
       <div class="score-pill">
-        <div class="score-dot pass"></div>
+        <span class="score-dot pass"></span>
         <span class="score-label">Pass</span>
-        <div class="score-num pass" id="passScore">0</div>
+        <span class="score-num pass" id="passScore">0</span>
       </div>
       <div class="score-pill">
-        <div class="score-dot smash"></div>
+        <span class="score-dot smash"></span>
         <span class="score-label">Smash</span>
-        <div class="score-num smash" id="smashScore">0</div>
+        <span class="score-num smash" id="smashScore">0</span>
       </div>
     </div>
 
@@ -51,8 +52,8 @@
           <span class="origin-flag" id="cardFlag"></span>
         </div>
         <div class="card-info">
-          <div class="car-category" id="cardCat">⚡ Hypercar</div>
-          <div class="car-make" id="cardMake">Chargement…</div>
+          <div class="car-category" id="cardCat"></div>
+          <div class="car-make" id="cardMake"></div>
           <div class="car-title-row">
             <div class="car-model" id="cardModel"></div>
             <div class="car-year"  id="cardYear"></div>
@@ -66,31 +67,31 @@
     </div>
 
     <div class="actions">
-      <button class="btn btn-pass"  id="btnPass"  onclick="vote('pass')"  disabled aria-label="Passer cette voiture">✕ Pass</button>
+      <button class="btn btn-pass"  id="btnPass"  onclick="vote('pass')"  disabled>✕ Pass</button>
       <button class="btn-info"                    onclick="openDetail()"  title="Détails" aria-label="Voir les détails">ℹ</button>
-      <button class="btn btn-smash" id="btnSmash" onclick="vote('smash')" disabled aria-label="Smash cette voiture">♥ Smash</button>
+      <button class="btn btn-smash" id="btnSmash" onclick="vote('smash')" disabled>♥ Smash</button>
     </div>
 
-    <p class="hint">← Swipe gauche pour passer · Swipe droite pour smash →</p>
+    <p class="hint">← Swipe gauche pour passer · Droite pour smash →</p>
     <p class="hint hint-kb">A / ← Pass &nbsp;·&nbsp; D / → Smash &nbsp;·&nbsp; I Infos</p>
 
   </section>
 
-  <!-- ══════════════ GARAGE VIEW ══════════════ -->
+  <!-- GARAGE VIEW -->
   <section class="view" id="view-garage" role="tabpanel">
     <div class="garage-header">
       <div class="garage-title">🏎 Mon Garage</div>
-      <div class="garage-count" id="garageCount">0 voiture(s) smashée(s)</div>
+      <div class="garage-count" id="garageCount">0 voiture(s)</div>
     </div>
     <div id="garageContent">
       <div class="garage-empty">
-        <div class="icon">🏁</div>
-        <p>Ton garage est vide.<br>Commence à voter pour remplir<br>ta collection de rêve !</p>
+        <div class="empty-icon">🏁</div>
+        <p>Ton garage est vide.<br>Commence à voter pour remplir ta collection !</p>
       </div>
     </div>
   </section>
 
-  <!-- ══════════════ DETAIL MODAL ══════════════ -->
+  <!-- DETAIL MODAL -->
   <div class="modal-backdrop hidden" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalName">
     <div class="modal" id="modalBox">
       <div class="modal-img-wrap">
@@ -104,7 +105,7 @@
         <div class="modal-stats" id="modalStats"></div>
         <div class="modal-price" id="modalPrice"></div>
         <div class="modal-desc"  id="modalDesc"></div>
-        <button class="modal-close" onclick="closeModal()" aria-label="Fermer la modale">Fermer</button>
+        <button class="modal-close" onclick="closeModal()">Fermer</button>
       </div>
     </div>
   </div>
