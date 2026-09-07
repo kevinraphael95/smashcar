@@ -1,374 +1,26 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SmashCar — Smash or Pass</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<style>
-/* ============ TOKENS ============ */
-:root{
-  --bg:#07070b;
-  --bg-2:#0c0c13;
-  --panel:#101018;
-  --panel-2:#14141e;
-  --line: rgba(255,255,255,.08);
-  --line-soft: rgba(255,255,255,.05);
-  --ink:#f2efe6;
-  --ink-dim: rgba(242,239,230,.5);
-  --ink-faint: rgba(242,239,230,.28);
-  --gold:#d7a94a;
-  --gold-soft: rgba(215,169,74,.16);
-  --red:#e2483d;
-  --red-soft: rgba(226,72,61,.14);
-  --green:#37a873;
-  --green-soft: rgba(55,168,115,.14);
-  --card-w: clamp(300px, 88vw, 388px);
-  --card-h: clamp(440px, 68vh, 560px);
-  --radius-card: 22px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--ink);}
-body{
-  font-family:'Inter',sans-serif;
-  min-height:100vh;
-  min-height:100dvh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  overflow-x:hidden;
-  padding:clamp(18px,3.5vw,32px) 0 40px;
-  background:
-    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(215,169,74,.09), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(226,72,61,.06), transparent 55%),
-    var(--bg);
-}
-::selection{ background: var(--gold-soft); }
-button{font-family:inherit;}
-:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
-
-/* ============ HEADER ============ */
-.header{ text-align:center; margin-bottom:22px; user-select:none; }
-.logo-row{ display:flex; align-items:center; justify-content:center; gap:10px; }
-.logo{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(38px,7.5vw,52px);
-  letter-spacing:4px;
-  color:var(--ink);
-  line-height:1;
-}
-.logo span{ color:var(--gold); }
-.logo-bar{
-  width:64px; height:3px; margin:8px auto 0;
-  background:linear-gradient(90deg,var(--red),var(--gold));
-  border-radius:2px;
-}
-.tagline{
-  font-size:11.5px; color:var(--ink-faint);
-  letter-spacing:.4px; margin-top:8px;
-}
-
-/* ============ TABS ============ */
-.tabs{
-  position:relative;
-  display:flex; gap:2px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:13px; padding:4px;
-  margin-bottom:22px;
-  width:clamp(260px,80vw,320px);
-}
-.tab{
-  flex:1; position:relative; z-index:1;
-  padding:10px 14px; border-radius:10px; border:none;
-  background:transparent; color:var(--ink-dim);
-  font-size:13.5px; font-weight:600; cursor:pointer;
-  transition:color .2s;
-  display:flex; align-items:center; justify-content:center; gap:6px;
-}
-.tab.active{ color:var(--bg); }
-.tab-indicator{
-  position:absolute; top:4px; bottom:4px; left:4px;
-  width:calc(50% - 4px);
-  background:var(--gold);
-  border-radius:10px;
-  transition:transform .28s cubic-bezier(.65,0,.35,1);
-  z-index:0;
-}
-.tab[data-tab="garage"].active ~ .tab-indicator,
-#tabs.on-garage .tab-indicator{ transform:translateX(100%); }
-.tab .count{
-  font-size:10.5px; font-weight:700;
-  background:rgba(0,0,0,.18); color:inherit;
-  padding:1px 6px; border-radius:20px;
-  min-width:16px;
-}
-.tab.active .count{ background:rgba(0,0,0,.14); }
-.tab:not(.active) .count{ background:rgba(255,255,255,.08); }
-
-/* ============ VIEWS ============ */
-.view{ display:none; width:100%; }
-.view.active{ display:flex; flex-direction:column; align-items:center; }
-
-/* ============ SCOREBAR ============ */
-.scorebar{ display:flex; gap:10px; margin-bottom:18px; }
-.score-pill{
-  display:flex; align-items:center; gap:8px;
-  background:var(--panel); border:1px solid var(--line);
-  border-radius:20px; padding:7px 16px 7px 12px;
-}
-.score-dot{ width:7px; height:7px; border-radius:50%; }
-.score-dot.pass{ background:var(--red); }
-.score-dot.smash{ background:var(--green); }
-.score-label{ font-size:11px; color:var(--ink-faint); font-weight:500; }
-.score-num{ font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; min-width:18px; text-align:right; }
-.score-num.pass{ color:var(--red); }
-.score-num.smash{ color:var(--green); }
-
-/* ============ DECK ============ */
-.deck{ position:relative; width:var(--card-w); height:var(--card-h); margin-bottom:20px; touch-action:none; flex-shrink:0; }
-
-.card{
-  position:absolute; inset:0; border-radius:var(--radius-card);
-  overflow:hidden; background:var(--panel);
-  border:1px solid var(--line);
-  will-change:transform;
-  transform-origin:50% 100%;
-  transition:transform .22s ease, filter .22s ease;
-}
-.card.front{ z-index:3; cursor:grab; user-select:none; box-shadow:0 24px 60px -20px rgba(0,0,0,.7); }
-.card.front:active{ cursor:grabbing; }
-.card.mid{ z-index:2; transform:scale(.95) translateY(-12px); filter:brightness(.55); }
-.card.back{ z-index:1; transform:scale(.90) translateY(-22px); filter:brightness(.32); }
-.card.ghost{ z-index:0; transform:scale(.85) translateY(-30px); filter:brightness(.15); }
-
-.skel{
-  position:absolute; inset:0;
-  background:linear-gradient(110deg,#101018 30%,#1c1c2a 50%,#101018 70%);
-  background-size:400% 100%;
-  animation:skel 1.6s ease infinite;
-}
-@keyframes skel{ 0%{background-position:120% 0;} 100%{background-position:-20% 0;} }
-
-.car-img{ width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity .5s ease; }
-.car-img.visible{ opacity:1; }
-
-/* fallback quand aucune image ne charge */
-.img-fallback{
-  position:absolute; inset:0; display:none;
-  align-items:center; justify-content:center; flex-direction:column; gap:10px;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(215,169,74,.14), transparent 55%),
-    linear-gradient(160deg,#15151f,#0a0a10);
-}
-.img-fallback.show{ display:flex; }
-.img-fallback .fb-flag{ font-size:34px; opacity:.85; }
-.img-fallback .fb-name{
-  font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1px;
-  color:var(--ink-dim); text-align:center; padding:0 20px;
-}
-
-.card-grad{
-  position:absolute; inset:0; pointer-events:none;
-  background:linear-gradient(to top, rgba(3,3,8,.97) 0%, rgba(3,3,8,.62) 38%, rgba(3,3,8,.08) 64%, transparent 100%);
-}
-.card-top-grad{
-  position:absolute; top:0; left:0; right:0; height:100px; pointer-events:none;
-  background:linear-gradient(to bottom, rgba(3,3,8,.55), transparent);
-  display:flex; align-items:flex-start; justify-content:space-between; padding:15px 17px;
-}
-.car-num{ font-size:11px; color:rgba(255,255,255,.32); font-variant-numeric:tabular-nums; }
-.origin-flag{ font-size:21px; filter:drop-shadow(0 1px 3px rgba(0,0,0,.5)); }
-
-.card-info{ position:absolute; bottom:0; left:0; right:0; padding:clamp(15px,3vw,22px); }
-.car-category{
-  display:inline-flex; align-items:center; gap:6px;
-  font-size:11px; font-weight:600; color:var(--gold);
-  margin-bottom:7px;
-}
-.car-category::before{ content:''; width:5px; height:5px; border-radius:50%; background:var(--gold); }
-.car-make{ font-size:12.5px; color:rgba(255,255,255,.42); margin-bottom:1px; font-weight:500; }
-.car-title-row{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:12px; }
-.car-model{ font-family:'Bebas Neue',sans-serif; font-size:clamp(32px,7.5vw,44px); line-height:.95; color:#fff; letter-spacing:.5px; }
-.car-year{ font-family:'Bebas Neue',sans-serif; font-size:clamp(15px,3vw,20px); color:rgba(255,255,255,.26); }
-
-.car-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:10px; }
-.stat{ background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); border-radius:11px; padding:8px 4px; text-align:center; }
-.stat-val{ font-family:'Bebas Neue',sans-serif; font-size:clamp(15px,3vw,19px); color:#fff; line-height:1; }
-.stat-label{ font-size:9px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.6px; margin-top:3px; }
-
-.car-desc{ font-size:clamp(11px,1.6vw,12.5px); color:rgba(255,255,255,.38); line-height:1.6; }
-
-.vind{
-  position:absolute; top:22px; padding:6px 16px; border-radius:9px;
-  font-family:'Bebas Neue',sans-serif; font-size:clamp(20px,4.5vw,26px);
-  letter-spacing:2px; opacity:0; pointer-events:none; border:2px solid;
-  transition:opacity .06s; backdrop-filter:blur(2px);
-}
-.vind.smash{ left:16px; color:var(--green); border-color:var(--green); background:rgba(55,168,115,.12); }
-.vind.pass{ right:16px; color:var(--red); border-color:var(--red); background:rgba(226,72,61,.12); }
-
-/* ============ ACTIONS ============ */
-.actions{ display:flex; gap:10px; align-items:center; width:var(--card-w); }
-.btn{
-  height:54px; border:none; border-radius:15px;
-  font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:1.5px;
-  cursor:pointer; transition:transform .15s, background .2s, opacity .2s; flex:1;
-}
-.btn:hover:not(:disabled){ transform:translateY(-2px); }
-.btn:active:not(:disabled){ transform:scale(.95); }
-.btn:disabled{ opacity:.3; cursor:not-allowed; }
-.btn-pass{ background:var(--red-soft); color:var(--red); border:1.5px solid rgba(226,72,61,.32); }
-.btn-pass:hover:not(:disabled){ background:rgba(226,72,61,.22); }
-.btn-smash{ background:var(--green-soft); color:var(--green); border:1.5px solid rgba(55,168,115,.32); }
-.btn-smash:hover:not(:disabled){ background:rgba(55,168,115,.22); }
-.btn-info{
-  width:52px; height:54px; flex:none; background:rgba(255,255,255,.045);
-  border:1px solid var(--line); border-radius:15px; color:var(--ink-faint);
-  cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;
-  transition:background .2s,color .2s,transform .15s;
-}
-.btn-info:hover{ background:rgba(255,255,255,.09); color:var(--ink); transform:translateY(-2px); }
-
-.hint{ font-size:11px; color:var(--ink-faint); text-align:center; margin-top:12px; }
-.hint-kb{ display:none; }
-@media (pointer:fine) and (min-width:600px){ .hint-kb{ display:block; margin-top:4px; } }
-
-/* ============ FLY / ENTER ============ */
-.fly-left{ animation:flyL .4s cubic-bezier(.55,.055,.675,.19) forwards !important; }
-.fly-right{ animation:flyR .4s cubic-bezier(.55,.055,.675,.19) forwards !important; }
-@keyframes flyL{ to{ transform:translateX(-160%) rotate(-30deg); opacity:0; } }
-@keyframes flyR{ to{ transform:translateX(160%) rotate(30deg); opacity:0; } }
-.card-enter{ animation:cardIn .4s cubic-bezier(.34,1.2,.64,1) forwards; }
-@keyframes cardIn{ from{ transform:scale(.92) translateY(22px); opacity:0; } to{ transform:none; opacity:1; } }
-
-/* ============ TOAST ============ */
-.toast{
-  position:fixed; top:16px; left:50%;
-  transform:translateX(-50%) translateY(-90px);
-  background:var(--panel-2); border:1px solid var(--line); color:#fff;
-  padding:10px 20px; border-radius:13px; font-weight:600; font-size:13.5px;
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
-  z-index:999; white-space:nowrap; pointer-events:none;
-  display:flex; align-items:center; gap:8px;
-}
-.toast.show{ transform:translateX(-50%) translateY(0); }
-.toast-dot{ width:7px; height:7px; border-radius:50%; }
-
-/* ============ GARAGE ============ */
-.garage-header{
-  width:100%; max-width:920px; padding:0 clamp(12px,4vw,24px);
-  display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;
-}
-.garage-title{ font-family:'Bebas Neue',sans-serif; font-size:clamp(24px,5vw,32px); letter-spacing:1.5px; }
-.garage-count{ font-size:12px; color:var(--ink-faint); }
-.garage-empty{ text-align:center; padding:70px 24px; }
-.empty-icon{ font-size:44px; margin-bottom:16px; opacity:.7; }
-.garage-empty p{ font-size:13.5px; line-height:1.9; color:var(--ink-faint); max-width:280px; margin:0 auto; }
-
-.garage-grid{
-  width:100%; max-width:920px; padding:0 clamp(10px,3vw,20px);
-  display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(9px,2vw,13px);
-}
-@media (min-width:560px){ .garage-grid{ grid-template-columns:repeat(3,1fr); } }
-@media (min-width:820px){ .garage-grid{ grid-template-columns:repeat(4,1fr); } }
-
-.garage-card{
-  border-radius:15px; overflow:hidden; background:var(--panel);
-  border:1px solid var(--line); position:relative; aspect-ratio:3/4;
-  cursor:pointer; transition:transform .2s, border-color .2s;
-}
-.garage-card:hover{ transform:translateY(-4px); border-color:rgba(215,169,74,.35); }
-.garage-card-img{ width:100%; height:100%; object-fit:cover; display:block; background:var(--panel-2); }
-.garage-card-img-fallback{
-  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
-  background:linear-gradient(160deg,#181822,#0b0b11); padding:8px; text-align:center;
-}
-.garage-card-img-fallback .gf-icon{ font-size:26px; opacity:.75; }
-.garage-card-img-fallback .gf-name{ font-family:'Bebas Neue',sans-serif; font-size:14px; color:var(--ink-dim); line-height:1.05; }
-
-.garage-card-overlay{
-  position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:11px;
-  background:linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.25) 55%, transparent 100%);
-}
-.g-make{ font-size:9px; color:rgba(255,255,255,.42); letter-spacing:.3px; }
-.g-model{ font-family:'Bebas Neue',sans-serif; font-size:clamp(15px,3.5vw,19px); color:#fff; line-height:1.1; }
-.g-year{ font-size:9px; color:var(--gold); margin-top:1px; }
-.smash-badge{
-  position:absolute; top:8px; right:8px; background:rgba(55,168,115,.92); color:#fff;
-  font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; letter-spacing:.3px; backdrop-filter:blur(4px);
-}
-
-/* ============ MODAL ============ */
-.modal-backdrop{
-  position:fixed; inset:0; background:rgba(3,3,6,.86); z-index:100;
-  display:flex; align-items:center; justify-content:center; padding:clamp(12px,4vw,32px);
-  backdrop-filter:blur(8px); animation:fadeIn .2s ease;
-}
-.modal-backdrop.hidden{ display:none; }
-@keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
-.modal{
-  background:var(--panel); border:1px solid var(--line); border-radius:20px;
-  width:100%; max-width:clamp(300px,90vw,480px); overflow:hidden;
-  animation:modalIn .3s cubic-bezier(.34,1.2,.64,1); max-height:90vh; overflow-y:auto;
-}
-@keyframes modalIn{ from{ transform:scale(.92) translateY(18px); opacity:0; } to{ transform:none; opacity:1; } }
-.modal-img-wrap{ position:relative; width:100%; height:clamp(160px,34vw,230px); background:var(--panel-2); }
-.modal-img{ width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity .4s; }
-.modal-img.visible{ opacity:1; }
-.modal-img-grad{ position:absolute; inset:0; background:linear-gradient(to top, var(--panel) 0%, transparent 55%); }
-.modal-img-badge{
-  position:absolute; top:12px; left:12px; font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:1.5px;
-  color:var(--gold); background:rgba(0,0,0,.55); padding:4px 10px; border-radius:20px; border:1px solid rgba(215,169,74,.3);
-}
-.modal-body{ padding:clamp(16px,3.5vw,24px); }
-.modal-make{ font-size:11.5px; color:var(--ink-faint); font-weight:500; }
-.modal-name{ font-family:'Bebas Neue',sans-serif; font-size:clamp(28px,6vw,38px); color:#fff; margin:2px 0 15px; line-height:1; letter-spacing:.5px; }
-.modal-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
-.modal-stat{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:11px 6px; text-align:center; }
-.modal-stat-val{ font-family:'Bebas Neue',sans-serif; font-size:clamp(15px,3.5vw,20px); color:#fff; line-height:1; }
-.modal-stat-label{ font-size:9px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
-.modal-price{ font-size:13px; color:var(--gold); font-weight:700; margin-bottom:11px; }
-.modal-desc{ font-size:clamp(12.5px,1.6vw,14px); color:rgba(255,255,255,.46); line-height:1.75; margin-bottom:18px; }
-.modal-close{
-  width:100%; padding:13px; background:rgba(255,255,255,.055); border:1px solid var(--line); border-radius:13px;
-  color:var(--ink); font-size:14px; font-weight:600; cursor:pointer; transition:background .2s;
-}
-.modal-close:hover{ background:rgba(255,255,255,.1); }
-
-/* ============ DESKTOP ============ */
-@media (min-width:860px){
-  #view-game{ flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:0 clamp(28px,4vw,52px); }
-  .scorebar{ flex-basis:100%; justify-content:center; }
-  .deck{ order:1; }
-  .actions{ order:3; align-self:flex-start; }
-  .hint{ order:4; flex-basis:var(--card-w); margin-top:14px; }
-  .hint-kb{ order:5; flex-basis:var(--card-w); }
-}
-
-@media (prefers-reduced-motion:reduce){
-  *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
-}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmashCar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
   <header class="header">
-    <div class="logo-row">
-      <div class="logo">SMASH<span>CAR</span></div>
-    </div>
-    <div class="logo-bar"></div>
+    <div class="logo">SmashCar</div>
     <div class="tagline">Smash or Pass · Édition Supercar</div>
   </header>
 
-  <nav class="tabs" id="tabs" role="tablist">
-    <button class="tab active" role="tab" aria-selected="true" onclick="switchTab('game')" id="tab-game" data-tab="game">🏁 Vote</button>
-    <button class="tab" role="tab" aria-selected="false" onclick="switchTab('garage')" id="tab-garage" data-tab="garage">
-      🏎 Garage <span class="count" id="garageBadge">0</span>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" role="tab" aria-selected="true"  onclick="switchTab('game')"   id="tab-game">🏁 Vote</button>
+    <button class="tab"        role="tab" aria-selected="false" onclick="switchTab('garage')" id="tab-garage">
+      🏎 Garage <span class="badge" id="garageBadge">0</span>
     </button>
-    <div class="tab-indicator"></div>
   </nav>
 
   <!-- GAME VIEW -->
@@ -389,15 +41,11 @@ button{font-family:inherit;}
 
     <div class="deck" id="deck">
       <div class="card ghost" id="cGhost"><div class="skel"></div></div>
-      <div class="card back" id="cBack"><div class="skel"></div></div>
-      <div class="card mid" id="cMid"><div class="skel"></div></div>
+      <div class="card back"  id="cBack" ><div class="skel"></div></div>
+      <div class="card mid"   id="cMid"  ><div class="skel"></div></div>
       <div class="card front" id="cFront" tabindex="0" aria-label="Carte voiture">
         <div class="skel" id="sFront"></div>
         <img class="car-img" id="imgFront" alt="Voiture en cours"/>
-        <div class="img-fallback" id="fbFront">
-          <div class="fb-flag" id="fbFlag"></div>
-          <div class="fb-name" id="fbName"></div>
-        </div>
         <div class="card-grad"></div>
         <div class="card-top-grad">
           <span class="car-num" id="cardNum">#1</span>
@@ -408,19 +56,19 @@ button{font-family:inherit;}
           <div class="car-make" id="cardMake"></div>
           <div class="car-title-row">
             <div class="car-model" id="cardModel"></div>
-            <div class="car-year" id="cardYear"></div>
+            <div class="car-year"  id="cardYear"></div>
           </div>
           <div class="car-stats" id="cardStats"></div>
-          <div class="car-desc" id="cardDesc"></div>
+          <div class="car-desc"  id="cardDesc"></div>
         </div>
         <div class="vind smash" id="vindSmash" aria-hidden="true">SMASH ✓</div>
-        <div class="vind pass" id="vindPass" aria-hidden="true">PASS ✗</div>
+        <div class="vind pass"  id="vindPass"  aria-hidden="true">PASS ✗</div>
       </div>
     </div>
 
     <div class="actions">
-      <button class="btn btn-pass" id="btnPass" onclick="vote('pass')" disabled>✕ Pass</button>
-      <button class="btn-info" onclick="openDetail()" title="Détails" aria-label="Voir les détails">ℹ</button>
+      <button class="btn btn-pass"  id="btnPass"  onclick="vote('pass')"  disabled>✕ Pass</button>
+      <button class="btn-info"                    onclick="openDetail()"  title="Détails" aria-label="Voir les détails">ℹ</button>
       <button class="btn btn-smash" id="btnSmash" onclick="vote('smash')" disabled>♥ Smash</button>
     </div>
 
@@ -432,7 +80,7 @@ button{font-family:inherit;}
   <!-- GARAGE VIEW -->
   <section class="view" id="view-garage" role="tabpanel">
     <div class="garage-header">
-      <div class="garage-title">Mon Garage</div>
+      <div class="garage-title">🏎 Mon Garage</div>
       <div class="garage-count" id="garageCount">0 voiture(s)</div>
     </div>
     <div id="garageContent">
@@ -456,7 +104,7 @@ button{font-family:inherit;}
         <div class="modal-name" id="modalName"></div>
         <div class="modal-stats" id="modalStats"></div>
         <div class="modal-price" id="modalPrice"></div>
-        <div class="modal-desc" id="modalDesc"></div>
+        <div class="modal-desc"  id="modalDesc"></div>
         <button class="modal-close" onclick="closeModal()">Fermer</button>
       </div>
     </div>
@@ -464,369 +112,6 @@ button{font-family:inherit;}
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script>
-'use strict';
-
-/* ===========================================================
-   IMAGES — Wikimedia Commons via Special:FilePath
-   Cet endpoint redirige vers le bon fichier (avec la bonne
-   taille) et est beaucoup plus fiable que de pointer en dur
-   vers une URL /commons/x/xx/... (qui peut se tromper de hash
-   ou de casse). En cas d'échec malgré tout, un visuel de
-   secours (dégradé + drapeau + nom) prend le relais, donc
-   l'appli reste belle même si une photo ne charge pas.
-=========================================================== */
-function wikiImg(filename, width = 900) {
-  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=${width}`;
-}
-
-const FILES = {
-  LaFerrari:    "Ferrari_LaFerrari.jpg",
-  AventadorSVJ: "Lamborghini_Aventador_SVJ_-_2019_(cropped).jpg",
-  VeyronSS:     "Bugatti_Veyron_16.4_Super_Sport_-_Flickr_-_Alexandre_Prévot_(1_of_3).jpg",
-  McLarenP1:    "McLaren_P1_-_Goodwood_Festival_of_Speed_2013_(8985601519).jpg",
-  Porsche918:   "Porsche_918_Spyder_-_Mondial_de_l'Automobile_de_Paris_2014_-_002.jpg",
-  AgeraRS:      "Koenigsegg_Agera_(Goodwood_2012).jpg",
-  Huayra:       "Pagani_Huayra_-_Goodwood_Festival_of_Speed_2012_(7539562906).jpg",
-  FerEnzo:      "Ferrari_Enzo_Ferrari.JPG",
-  MurcielagoLp: "Lamborghini_Murchielago_LP_670-4_SuperVeloce_(Ank_Kumar).jpg",
-  AstonOne77:   "Aston_Martin_One-77_(Ank_Kumar)_06.jpg",
-  McLarenF1:    "McLaren_F1_LM_+_McLaren_F1,_Donington_2012_(7629596148).jpg",
-  Chiron:       "Bugatti_Chiron_2019_trimmed.jpg",
-  F488Pista:    "2019_Ferrari_488_Pista_(facelift,_red),_front_8.15.19.jpg",
-  HuracanEVO:   "2019_Lamborghini_Huracan_Evo_(facelift,_yellow),_front_8.15.19.jpg",
-  Nevera:       "Rimac_Nevera_Spa-Francorchamps_2022.jpg",
-  FordGT:       "2017_Ford_GT_-_front_(Reg).jpg",
-  CorvetteZ06:  "2023_Chevrolet_Corvette_Z06_in_Rapid_Blue,_front_11.19.22.jpg",
-  GT3RS:        "Porsche_911_GT3_RS_(992)_-_front,_Autoshow_Brussels_2023.jpg",
-  AmgOne:       "Mercedes-AMG_ONE_-_IAA_2021_2_(cropped).jpg",
-  MC20:         "Maserati_MC20_front.jpg",
-  Valkyrie:     "Aston_Martin_Valkyrie_Goodwood_2021.jpg",
-  F40:          "Ferrari_F40_1987_red_lr.jpg",
-};
-
-const CARS = [
-  { id:1,  make:'Ferrari',      model:'LaFerrari',        year:'2015', cat:'Hypercar',   flag:'🇮🇹', hp:'963',  top:'350', accel:'2.4',  price:'1,4 M€', desc:"V12 + moteur électrique KERS. 499 exemplaires, le summum de Maranello.", img: wikiImg(FILES.LaFerrari) },
-  { id:2,  make:'Lamborghini',  model:'Aventador SVJ',    year:'2019', cat:'Supercar',   flag:'🇮🇹', hp:'770',  top:'351', accel:'2.8',  price:'460 k€', desc:"V12 atmosphérique, ALA 2.0 actif. Record Nürburgring en production.", img: wikiImg(FILES.AventadorSVJ) },
-  { id:3,  make:'Bugatti',      model:'Veyron SS',        year:'2012', cat:'Hypercar',   flag:'🇫🇷', hp:'1200', top:'431', accel:'2.5',  price:'1,9 M€', desc:"W16, 4 turbos. Ex-voiture de série la plus rapide du monde à 431 km/h.", img: wikiImg(FILES.VeyronSS) },
-  { id:4,  make:'McLaren',      model:'P1',               year:'2013', cat:'Hypercar',   flag:'🇬🇧', hp:'916',  top:'350', accel:'2.8',  price:'1,1 M€', desc:"Hybride V8 twin-turbo + électrique. Successeur spirituel de la F1.", img: wikiImg(FILES.McLarenP1) },
-  { id:5,  make:'Porsche',      model:'918 Spyder',       year:'2014', cat:'Hypercar',   flag:'🇩🇪', hp:'887',  top:'345', accel:'2.5',  price:'780 k€', desc:"Triple motorisation. La Sainte Trinité des hypercars hybrides.", img: wikiImg(FILES.Porsche918) },
-  { id:6,  make:'Koenigsegg',   model:'Agera RS',         year:'2017', cat:'Hypercar',   flag:'🇸🇪', hp:'1360', top:'458', accel:'2.8',  price:'2,1 M€', desc:"5 records mondiaux. 458 km/h sur route fermée au Nevada.", img: wikiImg(FILES.AgeraRS) },
-  { id:7,  make:'Pagani',       model:'Huayra',           year:'2012', cat:'Hypercar',   flag:'🇮🇹', hp:'730',  top:'370', accel:'3.3',  price:'1,4 M€', desc:"Chef-d'œuvre artisanal. Carbo-titane, V12 biturbo AMG.", img: wikiImg(FILES.Huayra) },
-  { id:8,  make:'Ferrari',      model:'Enzo',             year:'2003', cat:'Supercar',   flag:'🇮🇹', hp:'660',  top:'355', accel:'3.6',  price:'3 M€',   desc:"Technologie F1 pour la route. 400 unités. Icône de Maranello.", img: wikiImg(FILES.FerEnzo) },
-  { id:9,  make:'Lamborghini',  model:'Murciélago LP670', year:'2009', cat:'Supercar',   flag:'🇮🇹', hp:'670',  top:'342', accel:'3.2',  price:'450 k€', desc:"V12 6.5L. Le SuperVeloce ultime avant l'Aventador.", img: wikiImg(FILES.MurcielagoLp) },
-  { id:10, make:'Aston Martin', model:'One-77',           year:'2011', cat:'Hypercar',   flag:'🇬🇧', hp:'750',  top:'354', accel:'3.5',  price:'1,4 M€', desc:"77 exemplaires, carbone. V12 atmo le plus puissant de série.", img: wikiImg(FILES.AstonOne77) },
-  { id:11, make:'McLaren',      model:'F1',               year:'1994', cat:'Légendaire', flag:'🇬🇧', hp:'627',  top:'386', accel:'3.2',  price:'20 M€',  desc:"Gordon Murray. V12 BMW. Siège central. Longtemps la plus rapide du monde.", img: wikiImg(FILES.McLarenF1) },
-  { id:12, make:'Bugatti',      model:'Chiron',           year:'2017', cat:'Hypercar',   flag:'🇫🇷', hp:'1500', top:'420', accel:'2.4',  price:'3 M€',   desc:"Successeur de la Veyron. W16 quad-turbo. 1500 ch et luxe absolu.", img: wikiImg(FILES.Chiron) },
-  { id:13, make:'Ferrari',      model:'488 Pista',        year:'2018', cat:'Supercar',   flag:'🇮🇹', hp:'720',  top:'340', accel:'2.85', price:'280 k€', desc:"Version piste : -50 kg, +50 ch. Polyvalence et brutalité.", img: wikiImg(FILES.F488Pista) },
-  { id:14, make:'Lamborghini',  model:'Huracán EVO',      year:'2020', cat:'Supercar',   flag:'🇮🇹', hp:'640',  top:'325', accel:'2.9',  price:'215 k€', desc:"V10 5.2L, 4WD, ALA actif. Le quotidien de rêve.", img: wikiImg(FILES.HuracanEVO) },
-  { id:15, make:'Rimac',        model:'Nevera',           year:'2022', cat:'Électrique', flag:'🇭🇷', hp:'1914', top:'412', accel:'1.97', price:'2,2 M€', desc:"1914 ch électriques. 0-100 en 1.97 s. La plus rapide jamais produite.", img: wikiImg(FILES.Nevera) },
-  { id:16, make:'Ford',         model:'GT',               year:'2017', cat:'Supercar',   flag:'🇺🇸', hp:'647',  top:'347', accel:'3.1',  price:'500 k€', desc:"Hommage au GT40 vainqueur du Mans 1966. Aéro F1.", img: wikiImg(FILES.FordGT) },
-  { id:17, make:'Chevrolet',    model:'Corvette Z06',     year:'2023', cat:'Supercar',   flag:'🇺🇸', hp:'670',  top:'312', accel:'2.6',  price:'110 k€', desc:"Flat-plane V8 central. Agressivité américaine à prix européen.", img: wikiImg(FILES.CorvetteZ06) },
-  { id:18, make:'Porsche',      model:'911 GT3 RS',       year:'2022', cat:'Supercar',   flag:'🇩🇪', hp:'525',  top:'296', accel:'3.2',  price:'230 k€', desc:"Flat-6 atmo, PDK, aileron immense. La perfection selon Stuttgart.", img: wikiImg(FILES.GT3RS) },
-  { id:19, make:'Mercedes-AMG', model:'ONE',              year:'2023', cat:'Hypercar',   flag:'🇩🇪', hp:'1063', top:'352', accel:'2.9',  price:'2,7 M€', desc:"Moteur F1 homologué route. V6 1.6L turbo + 4 moteurs élec.", img: wikiImg(FILES.AmgOne) },
-  { id:20, make:'Maserati',     model:'MC20',             year:'2021', cat:'Supercar',   flag:'🇮🇹', hp:'630',  top:'325', accel:'2.9',  price:'230 k€', desc:"Retour aux sources. V6 Nettuno biturbo. Passion italienne.", img: wikiImg(FILES.MC20) },
-  { id:21, make:'Aston Martin', model:'Valkyrie',         year:'2021', cat:'Hypercar',   flag:'🇬🇧', hp:'1160', top:'402', accel:'2.5',  price:'3,2 M€', desc:"Conçu par Adrian Newey. V12 Cosworth + KERS. F1 légale.", img: wikiImg(FILES.Valkyrie) },
-  { id:22, make:'Ferrari',      model:'F40',              year:'1992', cat:'Légendaire', flag:'🇮🇹', hp:'478',  top:'324', accel:'3.9',  price:'1,8 M€', desc:"Dernière Ferrari signée par Enzo. Zéro luxe. Pure et absolue.", img: wikiImg(FILES.F40) },
-];
-
-/* ── State ── */
-let queue = [], smashed = [];
-let passedCount = 0, smashedCount = 0;
-let currentCar = null, isAnimating = false, cardCounter = 0;
-let dragging = false, dragStartX = 0, dragStartY = 0, curDeltaX = 0, curDeltaY = 0;
-
-/* ── DOM refs ── */
-const frontCard = document.getElementById('cFront');
-const imgFront  = document.getElementById('imgFront');
-const sFront    = document.getElementById('sFront');
-const fbFront   = document.getElementById('fbFront');
-const fbFlag    = document.getElementById('fbFlag');
-const fbName    = document.getElementById('fbName');
-const vindSmash = document.getElementById('vindSmash');
-const vindPass  = document.getElementById('vindPass');
-const btnPass   = document.getElementById('btnPass');
-const btnSmash  = document.getElementById('btnSmash');
-const toastEl   = document.getElementById('toast');
-const tabsEl    = document.getElementById('tabs');
-
-/* ── Utils ── */
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function catIcon(cat) {
-  return { Légendaire: '🏆', Hypercar: '⚡', Électrique: '🔋' }[cat] ?? '🔥';
-}
-
-function preload(url) {
-  if (!url) return;
-  new Image().src = url;
-}
-
-let toastTimer;
-function showToast(msg, color) {
-  clearTimeout(toastTimer);
-  toastEl.innerHTML = `<span class="toast-dot" style="background:${color ?? '#fff'}"></span>${msg}`;
-  toastEl.classList.add('show');
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1900);
-}
-
-function setButtons(disabled) {
-  btnPass.disabled = btnSmash.disabled = disabled;
-}
-
-/* ── Queue ── */
-function refill() {
-  queue.push(...shuffle([...CARS]));
-}
-
-function ensureQueue(min = 4) {
-  if (queue.length < min) refill();
-}
-
-/* ── Render ── */
-function renderCard(car) {
-  if (!car) return;
-  cardCounter++;
-  document.getElementById('cardNum').textContent  = `#${cardCounter}`;
-  document.getElementById('cardFlag').textContent = car.flag;
-  document.getElementById('cardMake').textContent = car.make;
-  document.getElementById('cardModel').textContent = car.model;
-  document.getElementById('cardYear').textContent = car.year;
-  document.getElementById('cardCat').textContent  = `${catIcon(car.cat)} ${car.cat}`;
-  document.getElementById('cardDesc').textContent = car.desc;
-
-  document.getElementById('cardStats').innerHTML = `
-    <div class="stat"><div class="stat-val">${car.hp}</div><div class="stat-label">Ch</div></div>
-    <div class="stat"><div class="stat-val">${car.accel}s</div><div class="stat-label">0–100</div></div>
-    <div class="stat"><div class="stat-val">${car.top}</div><div class="stat-label">km/h max</div></div>`;
-
-  fbFlag.textContent = car.flag;
-  fbName.textContent = `${car.make} ${car.model}`;
-  fbFront.classList.remove('show');
-
-  sFront.style.display = 'block';
-  imgFront.classList.remove('visible');
-  imgFront.src = '';
-  imgFront.onload  = () => { imgFront.classList.add('visible'); sFront.style.display = 'none'; fbFront.classList.remove('show'); };
-  imgFront.onerror = () => { sFront.style.display = 'none'; fbFront.classList.add('show'); };
-  imgFront.src = car.img;
-}
-
-/* ── Init ── */
-function init() {
-  ensureQueue(5);
-  currentCar = queue.shift();
-  renderCard(currentCar);
-  ensureQueue(2);
-  preload(queue[0]?.img);
-  setButtons(false);
-}
-
-/* ── Vote ── */
-function vote(type) {
-  if (isAnimating) return;
-  isAnimating = true;
-  setButtons(true);
-
-  if (type === 'smash') {
-    smashedCount++;
-    smashed.push(currentCar);
-    document.getElementById('smashScore').textContent  = smashedCount;
-    document.getElementById('garageBadge').textContent = smashedCount;
-    showToast(`Smash — ${currentCar.model}`, '#37a873');
-    frontCard.classList.add('fly-right');
-  } else {
-    passedCount++;
-    document.getElementById('passScore').textContent = passedCount;
-    showToast(`Pass — ${currentCar.model}`, '#e2483d');
-    frontCard.classList.add('fly-left');
-  }
-
-  setTimeout(() => {
-    frontCard.classList.remove('fly-right', 'fly-left');
-    frontCard.style.transform = '';
-    vindSmash.style.opacity   = '0';
-    vindPass.style.opacity    = '0';
-
-    ensureQueue(2);
-    currentCar = queue.shift();
-    preload(queue[0]?.img);
-    renderCard(currentCar);
-    frontCard.classList.add('card-enter');
-    setTimeout(() => frontCard.classList.remove('card-enter'), 420);
-
-    isAnimating = false;
-    setButtons(false);
-    syncGarage();
-  }, 380);
-}
-
-/* ── Drag ── */
-frontCard.addEventListener('pointerdown', (e) => {
-  if (isAnimating) return;
-  dragging = true;
-  dragStartX = e.clientX;
-  dragStartY = e.clientY;
-  curDeltaX = curDeltaY = 0;
-  frontCard.setPointerCapture(e.pointerId);
-  frontCard.style.transition = 'none';
-});
-
-frontCard.addEventListener('pointermove', (e) => {
-  if (!dragging) return;
-  curDeltaX = e.clientX - dragStartX;
-  curDeltaY = e.clientY - dragStartY;
-  const rot = curDeltaX * 0.09;
-  frontCard.style.transform = `translateX(${curDeltaX}px) translateY(${curDeltaY * 0.25}px) rotate(${rot}deg)`;
-
-  const ratio = Math.min(Math.abs(curDeltaX) / 90, 1);
-  if (curDeltaX > 25) {
-    vindSmash.style.opacity = ratio;
-    vindPass.style.opacity  = '0';
-  } else if (curDeltaX < -25) {
-    vindPass.style.opacity  = ratio;
-    vindSmash.style.opacity = '0';
-  } else {
-    vindSmash.style.opacity = vindPass.style.opacity = '0';
-  }
-});
-
-frontCard.addEventListener('pointerup', () => {
-  if (!dragging) return;
-  dragging = false;
-  frontCard.style.transition = '';
-  if      (curDeltaX >  90) vote('smash');
-  else if (curDeltaX < -90) vote('pass');
-  else {
-    frontCard.style.transform = '';
-    vindSmash.style.opacity = vindPass.style.opacity = '0';
-  }
-});
-
-frontCard.addEventListener('pointercancel', () => {
-  dragging = false;
-  frontCard.style.transition = frontCard.style.transform = '';
-  vindSmash.style.opacity = vindPass.style.opacity = '0';
-});
-
-/* ── Keyboard ── */
-document.addEventListener('keydown', (e) => {
-  if (isAnimating) return;
-  if (document.getElementById('view-game').classList.contains('active')) {
-    if (e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') vote('pass');
-    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') vote('smash');
-    if (e.key === 'i'          || e.key === 'I')                   openDetail();
-  }
-  if (e.key === 'Escape') closeModal();
-});
-
-/* ── Garage ── */
-function syncGarage() {
-  const el    = document.getElementById('garageContent');
-  const count = document.getElementById('garageCount');
-  count.textContent = `${smashed.length} voiture(s)`;
-
-  if (!smashed.length) {
-    el.innerHTML = `
-      <div class="garage-empty">
-        <div class="empty-icon">🏁</div>
-        <p>Ton garage est vide.<br>Commence à voter pour remplir ta collection !</p>
-      </div>`;
-    return;
-  }
-
-  el.innerHTML = `<div class="garage-grid">${smashed.map(c => garageCardHTML(c)).join('')}</div>`;
-}
-
-function garageCardHTML(c) {
-  const data = encodeURIComponent(JSON.stringify(c));
-  return `
-    <div class="garage-card" role="button" tabindex="0"
-         onclick="showDetailEncoded('${data}')"
-         onkeydown="if(event.key==='Enter')showDetailEncoded('${data}')">
-      <img class="garage-card-img"
-           src="${c.img}"
-           alt="${c.make} ${c.model}"
-           loading="lazy"
-           onerror="this.outerHTML='<div class=\\'garage-card-img-fallback\\'><div class=\\'gf-icon\\'>${c.flag}</div><div class=\\'gf-name\\'>${c.make}<br>${c.model}</div></div>'"/>
-      <div class="garage-card-overlay">
-        <div class="g-make">${c.make}</div>
-        <div class="g-model">${c.model}</div>
-        <div class="g-year">${c.year}</div>
-      </div>
-      <div class="smash-badge">♥ SMASH</div>
-    </div>`;
-}
-
-/* ── Modal ── */
-function openDetail() {
-  if (currentCar) showDetail(currentCar);
-}
-
-function showDetailEncoded(encoded) {
-  showDetail(JSON.parse(decodeURIComponent(encoded)));
-}
-
-function showDetail(c) {
-  const modalImg = document.getElementById('modalImg');
-  modalImg.classList.remove('visible');
-  modalImg.onload  = () => modalImg.classList.add('visible');
-  modalImg.onerror = () => { modalImg.style.display = 'none'; };
-  modalImg.style.display = '';
-  modalImg.src = c.img;
-
-  document.getElementById('modalMake').textContent = `${c.make} · ${c.year}`;
-  document.getElementById('modalName').textContent = c.model;
-  document.getElementById('modalDesc').textContent = c.desc;
-  document.getElementById('modalPrice').textContent = `Prix estimé : ${c.price}`;
-  document.getElementById('modalBadge').textContent = `${catIcon(c.cat)} ${c.cat}`;
-
-  document.getElementById('modalStats').innerHTML = `
-    <div class="modal-stat">
-      <div class="modal-stat-val">${c.hp} ch</div>
-      <div class="modal-stat-label">Puissance</div>
-    </div>
-    <div class="modal-stat">
-      <div class="modal-stat-val">${c.accel} s</div>
-      <div class="modal-stat-label">0–100 km/h</div>
-    </div>
-    <div class="modal-stat">
-      <div class="modal-stat-val">${c.top} km/h</div>
-      <div class="modal-stat-label">Vmax</div>
-    </div>`;
-
-  document.getElementById('modal').classList.remove('hidden');
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.add('hidden');
-}
-
-document.getElementById('modal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('modal')) closeModal();
-});
-
-/* ── Tabs ── */
-function switchTab(tabId) {
-  document.querySelectorAll('.tab').forEach(btn => {
-    btn.classList.toggle('active', btn.id === `tab-${tabId}`);
-    btn.setAttribute('aria-selected', btn.id === `tab-${tabId}` ? 'true' : 'false');
-  });
-  document.querySelectorAll('.view').forEach(view => {
-    view.classList.toggle('active', view.id === `view-${tabId}`);
-  });
-  tabsEl.classList.toggle('on-garage', tabId === 'garage');
-  if (tabId === 'garage') syncGarage();
-}
-
-/* ── Boot ── */
-init();
-</script>
+  <script src="app.js"></script>
 </body>
 </html>
