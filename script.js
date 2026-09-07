@@ -122,6 +122,7 @@ async function renderCurrentCard() {
     loader.textContent = 'Recherche de nouvelles voitures récentes sur le Web...';
     content.style.display = 'none';
     imgEl.style.display = 'none';
+    imgEl.src = ''; // Réinitialisation stricte
 
     if (!isFetchingAPI) {
       await fetchCarsFromAPI();
@@ -131,6 +132,11 @@ async function renderCurrentCard() {
 
   const car = currentQueue[0];
 
+  // 1. On efface l'ancienne source et on masque pour éliminer tout résidu
+  imgEl.style.display = 'none';
+  imgEl.src = '';
+
+  // 2. Mise à jour des textes
   document.getElementById('carCat').textContent = car.category;
   document.getElementById('carName').textContent = car.name;
   document.getElementById('carSub').textContent = `${car.manufacturer} · ${car.year}`;
@@ -139,10 +145,26 @@ async function renderCurrentCard() {
   document.getElementById('specEngine').textContent = car.engine;
   document.getElementById('specYear').textContent = car.year;
 
-  imgEl.src = car.img;
-  imgEl.style.display = 'block';
-  loader.style.display = 'none';
-  content.style.display = 'flex';
+  // 3. Traitement sécurisé de l'image
+  const tempImg = new Image();
+  tempImg.src = car.img;
+
+  try {
+    // decode() s'assure que l'image est entièrement chargée et prête à être peinte
+    await tempImg.decode();
+    imgEl.src = car.img;
+    imgEl.style.display = 'block';
+    loader.style.display = 'none';
+    content.style.display = 'flex';
+  } catch (e) {
+    // Si le décodage échoue (ex: mauvaise connexion au retour d'arrière-plan)
+    imgEl.src = car.img;
+    imgEl.onload = () => {
+      imgEl.style.display = 'block';
+      loader.style.display = 'none';
+      content.style.display = 'flex';
+    };
+  }
 }
 
 async function handleVote(isSmash) {
@@ -150,6 +172,7 @@ async function handleVote(isSmash) {
   isAnimating = true;
 
   const card = document.getElementById('cFront');
+  const imgEl = document.getElementById('cardImg');
   const currentCar = currentQueue.shift();
 
   if (currentCar && !judgedCars.includes(currentCar.id)) {
@@ -172,13 +195,15 @@ async function handleVote(isSmash) {
   saveState();
 
   setTimeout(async () => {
+    // Masquage et vidage immédiat pour éviter que l'ancienne image subsiste
+    imgEl.style.display = 'none';
+    imgEl.src = '';
+
     card.style.transition = 'none';
     card.style.transform = 'none';
     document.getElementById('stampSmash').style.opacity = '0';
     document.getElementById('stampPass').style.opacity = '0';
 
-    document.getElementById('cardImg').style.display = 'none';
-    
     await renderCurrentCard();
     
     setTimeout(() => {
@@ -187,6 +212,15 @@ async function handleVote(isSmash) {
     }, 50);
   }, 300);
 }
+
+// Relance le réseau et la file au retour de l'utilisateur sur l'onglet
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (currentQueue.length < 5 && !isFetchingAPI) {
+      fetchCarsFromAPI();
+    }
+  }
+});
 
 window.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') handleVote(false);
