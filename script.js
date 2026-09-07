@@ -119,7 +119,7 @@ async function renderCurrentCard() {
 
   if (currentQueue.length === 0) {
     loader.style.display = 'flex';
-    loader.textContent = 'Recherche de nouvelles voitures récentes sur le Web...';
+    loader.textContent = 'Recherche de nouvelles voitures sur le Web...';
     content.style.display = 'none';
     imgEl.style.display = 'none';
     imgEl.src = ''; // Réinitialisation stricte
