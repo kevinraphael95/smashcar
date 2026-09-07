@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmashCar</title>
+  <title>SmashCar - 100% API</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
@@ -36,7 +36,6 @@
       overflow-x: hidden;
     }
 
-    /* Top Bar Tinder Style */
     header {
       width: 100%;
       max-width: var(--card-w);
@@ -87,7 +86,6 @@
       justify-content: center;
     }
 
-    /* Deck 3D */
     .deck {
       position: relative;
       width: var(--card-w);
@@ -106,6 +104,7 @@
       box-shadow: 0 15px 35px rgba(0,0,0,0.7);
       touch-action: none;
       user-select: none;
+      will-change: transform;
     }
 
     .card.front { z-index: 3; cursor: grab; }
@@ -123,6 +122,7 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      pointer-events: none;
     }
 
     .img-loader {
@@ -134,12 +134,15 @@
       background: #10101a;
       color: var(--muted);
       font-size: 0.85rem;
+      text-align: center;
+      padding: 20px;
     }
 
     .card-overlay {
       position: absolute;
       inset: 0;
       background: linear-gradient(to top, rgba(9, 9, 11, 0.95) 20%, rgba(9, 9, 11, 0.2) 60%, transparent 100%);
+      pointer-events: none;
     }
 
     .card-content {
@@ -150,6 +153,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      pointer-events: none;
     }
 
     .car-category {
@@ -162,7 +166,7 @@
 
     .car-title {
       font-family: 'Syne', sans-serif;
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 800;
       line-height: 1.1;
     }
@@ -190,8 +194,11 @@
 
     .spec-val {
       font-family: 'Syne', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .spec-lbl {
@@ -200,7 +207,6 @@
       text-transform: uppercase;
     }
 
-    /* Tinder Style Action Buttons */
     .actions {
       display: flex;
       align-items: center;
@@ -228,7 +234,6 @@
     .btn-pass { color: var(--red); border: 2px solid var(--red); }
     .btn-smash { color: var(--green); border: 2px solid var(--green); width: 72px; height: 72px; font-size: 1.9rem; }
 
-    /* Stamps Swipe */
     .stamp {
       position: absolute;
       top: 40px;
@@ -240,22 +245,22 @@
       border: 4px solid;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.1s ease;
       z-index: 5;
     }
     .stamp.smash { left: 24px; color: var(--green); border-color: var(--green); transform: rotate(-15deg); }
     .stamp.pass { right: 24px; color: var(--red); border-color: var(--red); transform: rotate(15deg); }
 
-    /* Modal Garage */
+    /* Correction Modals & Overflows */
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(12px);
       z-index: 100;
       display: none;
       flex-direction: column;
       padding: 20px;
+      overflow-y: auto;
     }
 
     .modal.active { display: flex; }
@@ -265,14 +270,20 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      width: 100%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .garage-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
       gap: 12px;
-      overflow-y: auto;
-      padding-bottom: 20px;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding-bottom: 30px;
     }
 
     .garage-card {
@@ -280,18 +291,36 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
-      aspect-ratio: 3/4;
+      height: 170px;
       position: relative;
+      cursor: pointer;
+      transition: transform 0.2s ease;
     }
 
+    .garage-card:hover { transform: scale(1.03); }
     .garage-card img { width: 100%; height: 100%; object-fit: cover; }
     .garage-card-info {
       position: absolute;
       bottom: 0; inset-x: 0;
       padding: 8px;
-      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+      background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
     }
-    .garage-card-name { font-size: 0.8rem; font-weight: 700; }
+    .garage-card-name { font-size: 0.75rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px #000; }
+
+    .detail-card {
+      background: #111118;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      max-width: 400px;
+      width: 100%;
+      margin: auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-img { width: 100%; height: 240px; object-fit: cover; }
+    .detail-body { padding: 20px; }
   </style>
 </head>
 <body>
@@ -299,32 +328,31 @@
   <header>
     <div class="logo">SmashCar</div>
     <button class="icon-btn" onclick="toggleGarage()">
-      ⚙️
+      🏎
       <span class="badge" id="gBadge">0</span>
     </button>
   </header>
 
-  <!-- DECK PRINCIPAL -->
   <div class="deck">
     <div class="card front" id="cFront">
       <div class="card-img-wrap">
-        <div class="img-loader" id="loader">Recherche de la photo...</div>
+        <div class="img-loader" id="loader">Connexion à l'API Wikidata...</div>
         <img class="card-img" id="cardImg" alt="Car" style="display:none;" />
         <div class="card-overlay"></div>
         <div class="stamp smash" id="stampSmash">SMASH</div>
         <div class="stamp pass" id="stampPass">PASS</div>
       </div>
-      <div class="card-content">
+      <div class="card-content" id="cardContent" style="display: none;">
         <div>
-          <span class="car-category" id="carCat">Catégorie</span>
-          <h2 class="car-title" id="carName">Marque Modèle</h2>
-          <p class="car-subtitle" id="carSub">Origine · Année</p>
+          <span class="car-category" id="carCat">Automobile</span>
+          <h2 class="car-title" id="carName">-</h2>
+          <p class="car-subtitle" id="carSub">-</p>
         </div>
 
         <div class="car-specs">
           <div class="spec-item">
             <div class="spec-val" id="specHp">-</div>
-            <div class="spec-lbl">Puissance</div>
+            <div class="spec-lbl">Origine</div>
           </div>
           <div class="spec-item">
             <div class="spec-val" id="specEngine">-</div>
@@ -339,80 +367,146 @@
     </div>
   </div>
 
-  <!-- BOUTONS TINDER -->
   <div class="actions">
     <button class="btn-circle btn-pass" onclick="handleVote(false)">✖</button>
     <button class="btn-circle btn-smash" onclick="handleVote(true)">💚</button>
   </div>
 
-  <!-- MODAL GARAGE (REGLAGES) -->
   <div class="modal" id="garageModal">
     <div class="modal-header">
-      <h2>🏎 Garage (Smashed)</h2>
+      <h2>🏎 Mon Garage</h2>
       <button class="icon-btn" onclick="toggleGarage()">✕</button>
     </div>
     <div class="garage-grid" id="garageGrid"></div>
   </div>
 
-  <script>
-    const MODELS = [
-      { make: "Peugeot", model: "208", cat: "Citadine", year: "2023", flag: "🇫🇷", hp: "100 ch", engine: "Essence" },
-      { make: "Renault", model: "Clio 5", cat: "Citadine", year: "2022", flag: "🇫🇷", hp: "90 ch", engine: "Essence" },
-      { make: "Volkswagen", model: "Golf GTI", cat: "Compacte", year: "2021", flag: "🇩🇪", hp: "245 ch", engine: "Turbo 2.0L" },
-      { make: "BMW", model: "M3 Competition", cat: "Berline Sport", year: "2022", flag: "🇩🇪", hp: "510 ch", engine: "6 en ligne" },
-      { make: "Audi", model: "RS6 Avant", cat: "Break", year: "2023", flag: "🇩🇪", hp: "600 ch", engine: "V8 Biturbo" },
-      { make: "Porsche", model: "911 GT3 RS", cat: "Supercar", year: "2023", flag: "🇩🇪", hp: "525 ch", engine: "Flat-6 Atmo" },
-      { make: "Tesla", model: "Model 3", cat: "Électrique", year: "2023", flag: "🇺🇸", hp: "283 ch", engine: "Électrique" },
-      { make: "Toyota", model: "Yaris GR", cat: "Sportive", year: "2021", flag: "🇯🇵", hp: "261 ch", engine: "Turbo 1.6L" },
-      { make: "Ford", model: "Mustang GT", cat: "Muscle Car", year: "2020", flag: "🇺🇸", hp: "450 ch", engine: "V8 5.0L" },
-      { make: "Lamborghini", model: "Urus", cat: "SUV Sportif", year: "2021", flag: "🇮🇹", hp: "650 ch", engine: "V8 Biturbo" },
-      { make: "Ferrari", model: "F40", cat: "Légende", year: "1987", flag: "🇮🇹", hp: "478 ch", engine: "V8 Biturbo" },
-      { make: "Alpine", model: "A110", cat: "Coupé Sport", year: "2022", flag: "🇫🇷", hp: "252 ch", engine: "Turbo 1.8L" }
-    ];
+  <div class="modal" id="detailModal">
+    <div class="modal-header">
+      <h2>Détails du véhicule</h2>
+      <button class="icon-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-card" id="detailContent"></div>
+  </div>
 
+  <script>
     let currentQueue = [];
     let garage = [];
+    let judgedCars = [];
     let isAnimating = false;
+    let isFetchingAPI = false;
 
-    async function fetchCarImage(query) {
-      const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + ' car')}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=800&format=json&origin=*`;
+    function checkMonthlyStoragePurge() {
+      const lastPurge = localStorage.getItem('smashcar_last_purge');
+      const now = Date.now();
+      const THIRTY_DAYS = 2592000000;
+
+      if (!lastPurge || (now - parseInt(lastPurge, 10)) > THIRTY_DAYS) {
+        localStorage.removeItem('smashcar_judged');
+        localStorage.removeItem('smashcar_garage');
+        localStorage.setItem('smashcar_last_purge', now.toString());
+      }
+    }
+
+    function loadSavedData() {
+      checkMonthlyStoragePurge();
+      const savedJudged = localStorage.getItem('smashcar_judged');
+      const savedGarage = localStorage.getItem('smashcar_garage');
+      
+      if (savedJudged) judgedCars = JSON.parse(savedJudged);
+      if (savedGarage) garage = JSON.parse(savedGarage);
+
+      document.getElementById('gBadge').textContent = garage.length;
+    }
+
+    function saveState() {
+      localStorage.setItem('smashcar_judged', JSON.stringify(judgedCars));
+      localStorage.setItem('smashcar_garage', JSON.stringify(garage));
+    }
+
+    // API avec tri aléatoire, filtrage des véhicules récents (>= 1970) et type de carrosserie
+    async function fetchCarsFromAPI() {
+      if (isFetchingAPI) return;
+      isFetchingAPI = true;
+
+      const sparqlQuery = `
+        SELECT DISTINCT ?car ?carLabel ?image ?manufacturerLabel ?countryLabel ?year ?engineLabel ?bodyTypeLabel WHERE {
+          ?car wdt:P31/wdt:P279* wd:Q1420;
+               wdt:P18 ?image;
+               wdt:P571 ?inception.
+          BIND(YEAR(?inception) AS ?year)
+          FILTER(?year >= 1970)
+          OPTIONAL { ?car wdt:P4100 ?bodyType. }
+          OPTIONAL { ?car wdt:P176 ?manufacturer. }
+          OPTIONAL { ?car wdt:P495 ?country. }
+          OPTIONAL { ?car wdt:P516 ?engine. }
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en". }
+        }
+        ORDER BY UUID()
+        LIMIT 50
+      `;
+
+      const url = "https://query.wikidata.org/sparql?query=" + encodeURIComponent(sparqlQuery) + "&format=json";
+
       try {
         const res = await fetch(url);
         const data = await res.json();
-        if (data.query && data.query.pages) {
-          const pageId = Object.keys(data.query.pages)[0];
-          return data.query.pages[pageId].thumbnail.source;
-        }
-      } catch (e) {
-        console.error("Erreur API Image:", e);
-      }
-      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" fill="%23151520"/><text x="50%" y="50%" fill="%238a8f9d" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="30">${encodeURIComponent(query)}</text></svg>`;
-    }
+        const results = data.results.bindings;
 
-    async function initQueue() {
-      const shuffled = [...MODELS].sort(() => Math.random() - 0.5);
-      currentQueue = shuffled;
-      await renderCurrentCard();
+        const fetched = results.map(r => ({
+          id: r.car.value.split('/').pop(),
+          name: r.carLabel ? r.carLabel.value : "Voiture",
+          category: r.bodyTypeLabel ? r.bodyTypeLabel.value : "Automobile",
+          manufacturer: r.manufacturerLabel ? r.manufacturerLabel.value : "Marque inconnue",
+          country: r.countryLabel ? r.countryLabel.value : "Monde",
+          year: r.year ? r.year.value : "N/C",
+          engine: r.engineLabel ? r.engineLabel.value : "Standard",
+          img: r.image.value.replace("http://", "https://")
+        }));
+
+        // Dédoublonnage strict
+        const filtered = fetched.filter(item => 
+          !judgedCars.includes(item.id) && 
+          !currentQueue.some(q => q.id === item.id)
+        );
+        
+        currentQueue = [...currentQueue, ...filtered];
+      } catch (err) {
+        console.error("Erreur API Wikidata:", err);
+      } finally {
+        isFetchingAPI = false;
+      }
     }
 
     async function renderCurrentCard() {
-      if (currentQueue.length === 0) await initQueue();
-      
-      const loader = document.getElementById('loader');
-      const imgEl = document.getElementById('cardImg');
-      
-      loader.style.display = 'flex';
-      imgEl.style.display = 'none';
+      if (currentQueue.length === 0) {
+        document.getElementById('loader').style.display = 'flex';
+        document.getElementById('loader').textContent = 'Recherche de nouvelles voitures récentes sur le Web...';
+        document.getElementById('cardContent').style.display = 'none';
+        document.getElementById('cardImg').style.display = 'none';
+
+        await fetchCarsFromAPI();
+
+        if (currentQueue.length === 0) {
+          document.getElementById('loader').innerHTML = "🏁<br>Plus de nouvelles voitures trouvées pour le moment. Réessaye dans un instant !";
+          return;
+        }
+      }
 
       const car = currentQueue[0];
-      const imgUrl = await fetchCarImage(`${car.make} ${car.model}`);
-      car.img = imgUrl;
+      const loader = document.getElementById('loader');
+      const imgEl = document.getElementById('cardImg');
+      const content = document.getElementById('cardContent');
+
+      content.style.display = 'flex';
+      loader.style.display = 'flex';
+      loader.textContent = 'Chargement de la photo...';
+      imgEl.style.display = 'none';
+
+      document.getElementById('carCat').textContent = car.category;
+      document.getElementById('carName').textContent = car.name;
+      document.getElementById('carSub').textContent = `${car.manufacturer} · ${car.year}`;
       
-      document.getElementById('carCat').textContent = car.cat;
-      document.getElementById('carName').textContent = `${car.make} ${car.model}`;
-      document.getElementById('carSub').textContent = `${car.flag} Origine · ${car.year}`;
-      
-      document.getElementById('specHp').textContent = car.hp;
+      document.getElementById('specHp').textContent = car.country;
       document.getElementById('specEngine').textContent = car.engine;
       document.getElementById('specYear').textContent = car.year;
 
@@ -421,6 +515,12 @@
         loader.style.display = 'none';
         imgEl.style.display = 'block';
       };
+      imgEl.onerror = () => {
+        currentQueue.shift();
+        renderCurrentCard();
+      };
+
+      if (currentQueue.length < 5) fetchCarsFromAPI();
     }
 
     async function handleVote(isSmash) {
@@ -430,13 +530,23 @@
       const card = document.getElementById('cFront');
       const currentCar = currentQueue.shift();
 
+      if (!judgedCars.includes(currentCar.id)) {
+        judgedCars.push(currentCar.id);
+      }
+
+      card.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      
       if (isSmash) {
-        garage.push(currentCar);
+        if (!garage.some(g => g.id === currentCar.id)) {
+          garage.push(currentCar);
+        }
         document.getElementById('gBadge').textContent = garage.length;
         card.style.transform = 'translateX(150%) rotate(20deg)';
       } else {
         card.style.transform = 'translateX(-150%) rotate(-20deg)';
       }
+
+      saveState();
 
       setTimeout(async () => {
         card.style.transition = 'none';
@@ -453,30 +563,69 @@
       }, 300);
     }
 
+    window.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') handleVote(false);
+      if (e.key === 'ArrowRight') handleVote(true);
+    });
+
     function toggleGarage() {
       const modal = document.getElementById('garageModal');
       modal.classList.toggle('active');
       if (modal.classList.contains('active')) {
         const grid = document.getElementById('garageGrid');
-        grid.innerHTML = garage.map(c => `
-          <div class="garage-card">
-            <img src="${c.img}" alt="${c.model}"/>
+        grid.innerHTML = garage.map((c, i) => `
+          <div class="garage-card" onclick="openDetail(${i})">
+            <img src="${c.img}" alt="${c.name}"/>
             <div class="garage-card-info">
-              <div class="garage-card-name">${c.make} ${c.model}</div>
+              <div class="garage-card-name">${c.name}</div>
             </div>
           </div>
         `).join('');
       }
     }
 
-    // Drag Swipe Tactile
+    function openDetail(index) {
+      const c = garage[index];
+      const modal = document.getElementById('detailModal');
+      const container = document.getElementById('detailContent');
+      
+      container.innerHTML = `
+        <img class="detail-img" src="${c.img}" alt="${c.name}"/>
+        <div class="detail-body">
+          <span class="car-category">${c.category}</span>
+          <h2 class="car-title">${c.name}</h2>
+          <p class="car-subtitle" style="margin-bottom:16px;">${c.manufacturer} · ${c.year}</p>
+          <div class="car-specs">
+            <div class="spec-item">
+              <div class="spec-val">${c.country}</div>
+              <div class="spec-lbl">Origine</div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-val">${c.engine}</div>
+              <div class="spec-lbl">Moteur</div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-val">${c.year}</div>
+              <div class="spec-lbl">Année</div>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.classList.add('active');
+    }
+
+    function closeDetail() {
+      document.getElementById('detailModal').classList.remove('active');
+    }
+
     const front = document.getElementById('cFront');
     let startX = 0, currentX = 0;
 
     front.addEventListener('pointerdown', e => {
-      if (isAnimating) return;
+      if (isAnimating || currentQueue.length === 0) return;
       startX = e.clientX;
       front.style.transition = 'none';
+      front.setPointerCapture(e.pointerId);
     });
 
     front.addEventListener('pointermove', e => {
@@ -495,12 +644,14 @@
       }
     });
 
-    front.addEventListener('pointerup', () => {
+    front.addEventListener('pointerup', e => {
       if (!startX) return;
+      front.releasePointerCapture(e.pointerId);
+      
       if (currentX > 100) handleVote(true);
       else if (currentX < -100) handleVote(false);
       else {
-        front.style.transition = 'transform 0.2s ease';
+        front.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
         front.style.transform = 'none';
         document.getElementById('stampSmash').style.opacity = '0';
         document.getElementById('stampPass').style.opacity = '0';
@@ -509,7 +660,8 @@
       currentX = 0;
     });
 
-    initQueue();
+    loadSavedData();
+    renderCurrentCard();
   </script>
 </body>
 </html>
