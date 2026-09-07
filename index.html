@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmashCar — All Cars Edition</title>
+  <title>SmashCar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
   
   <style>
     :root {
-      --bg: #050508;
-      --surface: rgba(255, 255, 255, 0.03);
-      --border: rgba(255, 255, 255, 0.08);
+      --bg: #09090b;
+      --surface: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
       --text: #f3f4f6;
       --muted: #8a8f9d;
-      --red: #ff3b30;
-      --green: #34c759;
+      --red: #ff2a5f;
+      --green: #20e070;
       --accent: #e5c158;
       --card-w: clamp(310px, 90vw, 380px);
-      --card-h: clamp(480px, 75vw, 560px);
+      --card-h: clamp(500px, 78vw, 580px);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,88 +32,60 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px 10px;
+      padding: 12px 10px;
       overflow-x: hidden;
-      background-image: 
-        radial-gradient(circle at 50% 0%, rgba(229, 193, 88, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(52, 199, 89, 0.05) 0%, transparent 40%);
     }
 
+    /* Top Bar Tinder Style */
     header {
-      text-align: center;
-      margin-bottom: 20px;
+      width: 100%;
+      max-width: var(--card-w);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 4px 16px;
     }
 
     .logo {
       font-family: 'Syne', sans-serif;
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 800;
-      letter-spacing: -1px;
-      background: linear-gradient(135deg, #fff 30%, var(--muted) 100%);
+      background: linear-gradient(135deg, #ff2a5f 0%, #e5c158 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-transform: uppercase;
     }
 
-    .nav-tabs {
-      display: flex;
+    .icon-btn {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 4px;
-      margin-bottom: 20px;
-      backdrop-filter: blur(12px);
-    }
-
-    .tab-btn {
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      padding: 8px 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border-radius: 100px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .tab-btn.active {
-      background: rgba(255, 255, 255, 0.1);
       color: var(--text);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      position: relative;
     }
 
     .badge {
-      background: var(--accent);
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--green);
       color: #000;
-      padding: 2px 7px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      margin-left: 5px;
-    }
-
-    .view { display: none; width: 100%; max-width: 900px; flex-direction: column; align-items: center; }
-    .view.active { display: flex; }
-
-    /* Score Bar */
-    .scorebar {
+      font-size: 0.65rem;
+      font-weight: 800;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
       display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
+      align-items: center;
+      justify-content: center;
     }
-
-    .score-pill {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 6px 16px;
-      border-radius: 100px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--muted);
-      display: flex;
-      gap: 8px;
-    }
-    .score-num.pass { color: var(--red); }
-    .score-num.smash { color: var(--green); }
 
     /* Deck 3D */
     .deck {
@@ -121,31 +93,28 @@
       width: var(--card-w);
       height: var(--card-h);
       perspective: 1000px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     .card {
       position: absolute;
       inset: 0;
-      border-radius: 24px;
+      border-radius: 28px;
       overflow: hidden;
-      background: #0d0d14;
+      background: #111118;
       border: 1px solid var(--border);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.7);
       touch-action: none;
       user-select: none;
     }
 
     .card.front { z-index: 3; cursor: grab; }
     .card.front:active { cursor: grabbing; }
-    .card.next { z-index: 2; transform: scale(0.93) translateY(18px) translateZ(-20px); opacity: 0.7; filter: brightness(0.6); }
-    .card.shadow { z-index: 1; transform: scale(0.86) translateY(36px) translateZ(-40px); opacity: 0.3; filter: brightness(0.3); }
 
     .card-img-wrap {
       position: relative;
       width: 100%;
-      height: 60%;
+      height: 100%;
       background: #151520;
     }
 
@@ -164,24 +133,23 @@
       justify-content: center;
       background: #10101a;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
 
     .card-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, #0d0d14 10%, transparent 100%);
+      background: linear-gradient(to top, rgba(9, 9, 11, 0.95) 20%, rgba(9, 9, 11, 0.2) 60%, transparent 100%);
     }
 
     .card-content {
       position: absolute;
       bottom: 0;
       inset-x: 0;
-      padding: 20px;
-      height: 45%;
+      padding: 24px 20px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      gap: 12px;
     }
 
     .car-category {
@@ -197,7 +165,6 @@
       font-size: 1.8rem;
       font-weight: 800;
       line-height: 1.1;
-      margin: 4px 0;
     }
 
     .car-subtitle {
@@ -205,62 +172,111 @@
       color: var(--muted);
     }
 
-    /* Action Buttons */
-    .actions {
-      display: flex;
-      gap: 16px;
-      width: var(--card-w);
+    .car-specs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 4px;
     }
 
-    .btn {
-      flex: 1;
-      padding: 16px;
-      border-radius: 16px;
-      border: none;
-      font-size: 1.1rem;
+    .spec-item {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 6px 4px;
+      text-align: center;
+    }
+
+    .spec-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
       font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    .spec-lbl {
+      font-size: 0.6rem;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* Tinder Style Action Buttons */
+    .actions {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 28px;
+      width: var(--card-w);
     }
 
-    .btn:active { transform: scale(0.95); }
-    .btn-pass { background: rgba(255, 59, 48, 0.15); color: var(--red); border: 1px solid rgba(255, 59, 48, 0.3); }
-    .btn-pass:hover { background: rgba(255, 59, 48, 0.25); }
-    .btn-smash { background: rgba(52, 199, 89, 0.15); color: var(--green); border: 1px solid rgba(52, 199, 89, 0.3); }
-    .btn-smash:hover { background: rgba(52, 199, 89, 0.25); }
+    .btn-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      background: #111118;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
 
-    /* Swipe Overlay Indicators */
+    .btn-circle:active { transform: scale(0.88); }
+    .btn-pass { color: var(--red); border: 2px solid var(--red); }
+    .btn-smash { color: var(--green); border: 2px solid var(--green); width: 72px; height: 72px; font-size: 1.9rem; }
+
+    /* Stamps Swipe */
     .stamp {
       position: absolute;
-      top: 30px;
-      padding: 8px 16px;
+      top: 40px;
+      padding: 6px 16px;
       border-radius: 12px;
       font-family: 'Syne', sans-serif;
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 800;
-      border: 3px solid;
+      border: 4px solid;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.1s ease;
+      z-index: 5;
     }
-    .stamp.smash { left: 20px; color: var(--green); border-color: var(--green); transform: rotate(-15deg); }
-    .stamp.pass { right: 20px; color: var(--red); border-color: var(--red); transform: rotate(15deg); }
+    .stamp.smash { left: 24px; color: var(--green); border-color: var(--green); transform: rotate(-15deg); }
+    .stamp.pass { right: 24px; color: var(--red); border-color: var(--red); transform: rotate(15deg); }
 
-    /* Garage Grid */
+    /* Modal Garage */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
     .garage-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-      width: 100%;
-      padding: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      overflow-y: auto;
+      padding-bottom: 20px;
     }
 
     .garage-card {
-      background: var(--surface);
+      background: #111118;
       border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
@@ -272,91 +288,92 @@
     .garage-card-info {
       position: absolute;
       bottom: 0; inset-x: 0;
-      padding: 10px;
+      padding: 8px;
       background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     }
-    .garage-card-name { font-size: 0.9rem; font-weight: 700; }
+    .garage-card-name { font-size: 0.8rem; font-weight: 700; }
   </style>
 </head>
 <body>
 
   <header>
     <div class="logo">SmashCar</div>
+    <button class="icon-btn" onclick="toggleGarage()">
+      ⚙️
+      <span class="badge" id="gBadge">0</span>
+    </button>
   </header>
 
-  <nav class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('game')">🔥 Voter</button>
-    <button class="tab-btn" onclick="switchTab('garage')">🏎 Garage <span class="badge" id="gBadge">0</span></button>
-  </nav>
-
-  <!-- VIEW: GAME -->
-  <section class="view active" id="view-game">
-    <div class="scorebar">
-      <div class="score-pill">Pass <span class="score-num pass" id="passNum">0</span></div>
-      <div class="score-pill">Smash <span class="score-num smash" id="smashNum">0</span></div>
-    </div>
-
-    <div class="deck">
-      <div class="card shadow" id="cShadow"></div>
-      <div class="card next" id="cNext"></div>
-      <div class="card front" id="cFront">
-        <div class="card-img-wrap">
-          <div class="img-loader" id="loader">Recherche de la photo...</div>
-          <img class="card-img" id="cardImg" alt="Car" style="display:none;" />
-          <div class="card-overlay"></div>
-          <div class="stamp smash" id="stampSmash">SMASH</div>
-          <div class="stamp pass" id="stampPass">PASS</div>
+  <!-- DECK PRINCIPAL -->
+  <div class="deck">
+    <div class="card front" id="cFront">
+      <div class="card-img-wrap">
+        <div class="img-loader" id="loader">Recherche de la photo...</div>
+        <img class="card-img" id="cardImg" alt="Car" style="display:none;" />
+        <div class="card-overlay"></div>
+        <div class="stamp smash" id="stampSmash">SMASH</div>
+        <div class="stamp pass" id="stampPass">PASS</div>
+      </div>
+      <div class="card-content">
+        <div>
+          <span class="car-category" id="carCat">Catégorie</span>
+          <h2 class="car-title" id="carName">Marque Modèle</h2>
+          <p class="car-subtitle" id="carSub">Origine · Année</p>
         </div>
-        <div class="card-content">
-          <div>
-            <span class="car-category" id="carCat">Catégorie</span>
-            <h2 class="car-title" id="carName">Marque Modèle</h2>
-            <p class="car-subtitle" id="carSub">Année / Spécificité</p>
+
+        <div class="car-specs">
+          <div class="spec-item">
+            <div class="spec-val" id="specHp">-</div>
+            <div class="spec-lbl">Puissance</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-val" id="specEngine">-</div>
+            <div class="spec-lbl">Moteur</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-val" id="specYear">-</div>
+            <div class="spec-lbl">Année</div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="actions">
-      <button class="btn btn-pass" onclick="handleVote(false)">✕ Pass</button>
-      <button class="btn btn-smash" onclick="handleVote(true)">♥ Smash</button>
+  <!-- BOUTONS TINDER -->
+  <div class="actions">
+    <button class="btn-circle btn-pass" onclick="handleVote(false)">✖</button>
+    <button class="btn-circle btn-smash" onclick="handleVote(true)">💚</button>
+  </div>
+
+  <!-- MODAL GARAGE (REGLAGES) -->
+  <div class="modal" id="garageModal">
+    <div class="modal-header">
+      <h2>🏎 Garage (Smashed)</h2>
+      <button class="icon-btn" onclick="toggleGarage()">✕</button>
     </div>
-  </section>
-
-  <!-- VIEW: GARAGE -->
-  <section class="view" id="view-garage">
     <div class="garage-grid" id="garageGrid"></div>
-  </section>
+  </div>
 
   <script>
-    // Banque de données universelle de modèles (Tous types de véhicules)
     const MODELS = [
-      { make: "Peugeot", model: "208", cat: "Citadine" },
-      { make: "Renault", model: "Clio 5", cat: "Citadine" },
-      { make: "Volkswagen", model: "Golf GTI", cat: "Compacte" },
-      { make: "BMW", model: "M3 Competition", cat: "Berline Sport" },
-      { make: "Audi", model: "RS6 Avant", cat: "Break" },
-      { make: "Porsche", model: "911 GT3 RS", cat: "Supercar" },
-      { make: "Tesla", model: "Model 3", cat: "Électrique" },
-      { make: "Toyota", model: "Yaris GR", cat: "Sportive" },
-      { make: "Ford", model: "Mustang GT", cat: "Muscle Car" },
-      { make: "Fiat", model: "500e", cat: "Citadine Électrique" },
-      { make: "Lamborghini", model: "Urus", cat: "SUV Sportif" },
-      { make: "Ferrari", model: "F40", cat: "Légende" },
-      { make: "Citroën", model: "2CV", cat: "Collection" },
-      { make: "Alpine", model: "A110", cat: "Coupé Sport" },
-      { make: "Mercedes-Benz", model: "G 63 AMG", cat: "SUV" },
-      { make: "Mazda", model: "MX-5 ND", cat: "Cabriolet" },
-      { make: "Bugatti", model: "Chiron", cat: "Hypercar" },
-      { make: "Dacia", model: "Duster", cat: "SUV" }
+      { make: "Peugeot", model: "208", cat: "Citadine", year: "2023", flag: "🇫🇷", hp: "100 ch", engine: "Essence" },
+      { make: "Renault", model: "Clio 5", cat: "Citadine", year: "2022", flag: "🇫🇷", hp: "90 ch", engine: "Essence" },
+      { make: "Volkswagen", model: "Golf GTI", cat: "Compacte", year: "2021", flag: "🇩🇪", hp: "245 ch", engine: "Turbo 2.0L" },
+      { make: "BMW", model: "M3 Competition", cat: "Berline Sport", year: "2022", flag: "🇩🇪", hp: "510 ch", engine: "6 en ligne" },
+      { make: "Audi", model: "RS6 Avant", cat: "Break", year: "2023", flag: "🇩🇪", hp: "600 ch", engine: "V8 Biturbo" },
+      { make: "Porsche", model: "911 GT3 RS", cat: "Supercar", year: "2023", flag: "🇩🇪", hp: "525 ch", engine: "Flat-6 Atmo" },
+      { make: "Tesla", model: "Model 3", cat: "Électrique", year: "2023", flag: "🇺🇸", hp: "283 ch", engine: "Électrique" },
+      { make: "Toyota", model: "Yaris GR", cat: "Sportive", year: "2021", flag: "🇯🇵", hp: "261 ch", engine: "Turbo 1.6L" },
+      { make: "Ford", model: "Mustang GT", cat: "Muscle Car", year: "2020", flag: "🇺🇸", hp: "450 ch", engine: "V8 5.0L" },
+      { make: "Lamborghini", model: "Urus", cat: "SUV Sportif", year: "2021", flag: "🇮🇹", hp: "650 ch", engine: "V8 Biturbo" },
+      { make: "Ferrari", model: "F40", cat: "Légende", year: "1987", flag: "🇮🇹", hp: "478 ch", engine: "V8 Biturbo" },
+      { make: "Alpine", model: "A110", cat: "Coupé Sport", year: "2022", flag: "🇫🇷", hp: "252 ch", engine: "Turbo 1.8L" }
     ];
 
     let currentQueue = [];
     let garage = [];
-    let passCount = 0, smashCount = 0;
     let isAnimating = false;
 
-    // Récupération dynamique d'une image en ligne via API Wikimedia Commons sans clé
     async function fetchCarImage(query) {
       const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + ' car')}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=800&format=json&origin=*`;
       try {
@@ -367,22 +384,14 @@
           return data.query.pages[pageId].thumbnail.source;
         }
       } catch (e) {
-        console.error("Erreur image API:", e);
+        console.error("Erreur API Image:", e);
       }
-      // Image générée dynamiquement en fallback si aucune photo n'est disponible
       return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" fill="%23151520"/><text x="50%" y="50%" fill="%238a8f9d" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="30">${encodeURIComponent(query)}</text></svg>`;
-    }
-
-    async function loadCardData(car) {
-      const imgUrl = await fetchCarImage(`${car.make} ${car.model}`);
-      return { ...car, img: imgUrl };
     }
 
     async function initQueue() {
       const shuffled = [...MODELS].sort(() => Math.random() - 0.5);
-      for (let item of shuffled) {
-        currentQueue.push(item);
-      }
+      currentQueue = shuffled;
       await renderCurrentCard();
     }
 
@@ -396,19 +405,22 @@
       imgEl.style.display = 'none';
 
       const car = currentQueue[0];
-      const carData = await loadCardData(car);
+      const imgUrl = await fetchCarImage(`${car.make} ${car.model}`);
+      car.img = imgUrl;
       
-      document.getElementById('carCat').textContent = carData.cat;
-      document.getElementById('carName').textContent = `${carData.make} ${carData.model}`;
-      document.getElementById('carSub').textContent = `Modèle officiel`;
+      document.getElementById('carCat').textContent = car.cat;
+      document.getElementById('carName').textContent = `${car.make} ${car.model}`;
+      document.getElementById('carSub').textContent = `${car.flag} Origine · ${car.year}`;
       
-      imgEl.src = carData.img;
+      document.getElementById('specHp').textContent = car.hp;
+      document.getElementById('specEngine').textContent = car.engine;
+      document.getElementById('specYear').textContent = car.year;
+
+      imgEl.src = car.img;
       imgEl.onload = () => {
         loader.style.display = 'none';
         imgEl.style.display = 'block';
       };
-
-      currentQueue[0] = carData; // Mise à jour avec le lien d'image réel
     }
 
     async function handleVote(isSmash) {
@@ -419,14 +431,10 @@
       const currentCar = currentQueue.shift();
 
       if (isSmash) {
-        smashCount++;
         garage.push(currentCar);
-        document.getElementById('smashNum').textContent = smashCount;
         document.getElementById('gBadge').textContent = garage.length;
         card.style.transform = 'translateX(150%) rotate(20deg)';
       } else {
-        passCount++;
-        document.getElementById('passNum').textContent = passCount;
         card.style.transform = 'translateX(-150%) rotate(-20deg)';
       }
 
@@ -445,34 +453,23 @@
       }, 300);
     }
 
-    // Gestion de la navigation
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      
-      if (tab === 'game') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('view-game').classList.add('active');
-      } else {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('view-garage').classList.add('active');
-        renderGarage();
+    function toggleGarage() {
+      const modal = document.getElementById('garageModal');
+      modal.classList.toggle('active');
+      if (modal.classList.contains('active')) {
+        const grid = document.getElementById('garageGrid');
+        grid.innerHTML = garage.map(c => `
+          <div class="garage-card">
+            <img src="${c.img}" alt="${c.model}"/>
+            <div class="garage-card-info">
+              <div class="garage-card-name">${c.make} ${c.model}</div>
+            </div>
+          </div>
+        `).join('');
       }
     }
 
-    function renderGarage() {
-      const grid = document.getElementById('garageGrid');
-      grid.innerHTML = garage.map(c => `
-        <div class="garage-card">
-          <img src="${c.img}" alt="${c.model}"/>
-          <div class="garage-card-info">
-            <div class="garage-card-name">${c.make} ${c.model}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Drag / Swipe Tactile
+    // Drag Swipe Tactile
     const front = document.getElementById('cFront');
     let startX = 0, currentX = 0;
 
@@ -512,7 +509,6 @@
       currentX = 0;
     });
 
-    // Lancement
     initQueue();
   </script>
 </body>
