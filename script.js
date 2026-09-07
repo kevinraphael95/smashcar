@@ -32,7 +32,17 @@ function saveState() {
   localStorage.setItem('smashcar_garage', JSON.stringify(garage));
 }
 
-// API avec tri aléatoire, filtrage des véhicules récents (>= 1970) et type de carrosserie
+// Fonction utilitaire : force le navigateur à télécharger l'image en arrière-plan
+function preloadImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = url;
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+  });
+}
+
+// API avec tri aléatoire et PRÉCHARGEMENT en arrière-plan
 async function fetchCarsFromAPI() {
   if (isFetchingAPI) return;
   isFetchingAPI = true;
@@ -78,7 +88,18 @@ async function fetchCarsFromAPI() {
       !currentQueue.some(q => q.id === item.id)
     );
     
-    currentQueue = [...currentQueue, ...filtered];
+    // Préchargement asynchrone des images
+    filtered.forEach(async (car) => {
+      const isValid = await preloadImage(car.img);
+      if (isValid) {
+        currentQueue.push(car);
+        // Si la file était vide et qu'on attendait une image, on affiche la première immédiatement
+        if (currentQueue.length === 1 && document.getElementById('cardImg').style.display === 'none') {
+          renderCurrentCard();
+        }
+      }
+    });
+
   } catch (err) {
     console.error("Erreur API Wikidata:", err);
   } finally {
@@ -87,18 +108,21 @@ async function fetchCarsFromAPI() {
 }
 
 async function renderCurrentCard() {
+  // Déclenche une recharge dès qu'on passe sous le seuil des 10 voitures en réserve
+  if (currentQueue.length < 10 && !isFetchingAPI) {
+    fetchCarsFromAPI();
+  }
+
   if (currentQueue.length === 0) {
     document.getElementById('loader').style.display = 'flex';
     document.getElementById('loader').textContent = 'Recherche de nouvelles voitures récentes sur le Web...';
     document.getElementById('cardContent').style.display = 'none';
     document.getElementById('cardImg').style.display = 'none';
 
-    await fetchCarsFromAPI();
-
-    if (currentQueue.length === 0) {
-      document.getElementById('loader').innerHTML = "🏁<br>Plus de nouvelles voitures trouvées pour le moment. Réessaye dans un instant !";
-      return;
+    if (!isFetchingAPI) {
+      await fetchCarsFromAPI();
     }
+    return;
   }
 
   const car = currentQueue[0];
@@ -106,10 +130,11 @@ async function renderCurrentCard() {
   const imgEl = document.getElementById('cardImg');
   const content = document.getElementById('cardContent');
 
+  // L'image étant déjà en cache navigateur grâce à preloadImage(), le rendu est direct
+  imgEl.src = car.img;
+  imgEl.style.display = 'block';
+  loader.style.display = 'none';
   content.style.display = 'flex';
-  loader.style.display = 'flex';
-  loader.textContent = 'Chargement de la photo...';
-  imgEl.style.display = 'none';
 
   document.getElementById('carCat').textContent = car.category;
   document.getElementById('carName').textContent = car.name;
@@ -118,18 +143,6 @@ async function renderCurrentCard() {
   document.getElementById('specHp').textContent = car.country;
   document.getElementById('specEngine').textContent = car.engine;
   document.getElementById('specYear').textContent = car.year;
-
-  imgEl.src = car.img;
-  imgEl.onload = () => {
-    loader.style.display = 'none';
-    imgEl.style.display = 'block';
-  };
-  imgEl.onerror = () => {
-    currentQueue.shift();
-    renderCurrentCard();
-  };
-
-  if (currentQueue.length < 5) fetchCarsFromAPI();
 }
 
 async function handleVote(isSmash) {
