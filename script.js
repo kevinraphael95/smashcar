@@ -3,11 +3,12 @@ let garage = [];
 let judgedCars = [];
 let isAnimating = false;
 let isFetchingAPI = false;
+let processingIds = new Set(); // Empêche les doublons pendant le préchargement
 
 function checkMonthlyStoragePurge() {
   const lastPurge = localStorage.getItem('smashcar_last_purge');
   const now = Date.now();
-  const THIRTY_DAYS = 2592000000;
+  const THIRTY_DAYS = 2592000000; // 30 jours en millisecondes
 
   if (!lastPurge || (now - parseInt(lastPurge, 10)) > THIRTY_DAYS) {
     localStorage.removeItem('smashcar_judged');
@@ -32,7 +33,7 @@ function saveState() {
   localStorage.setItem('smashcar_garage', JSON.stringify(garage));
 }
 
-// Fonction utilitaire : force le navigateur à télécharger l'image en arrière-plan
+// Fonction utilitaire : force le navigateur à télécharger l'image en mémoire
 function preloadImage(url) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -42,7 +43,7 @@ function preloadImage(url) {
   });
 }
 
-// API avec tri aléatoire et PRÉCHARGEMENT en arrière-plan
+// API avec tri aléatoire, préchargement et verrouillage anti-doublons
 async function fetchCarsFromAPI() {
   if (isFetchingAPI) return;
   isFetchingAPI = true;
@@ -82,21 +83,26 @@ async function fetchCarsFromAPI() {
       img: r.image.value.replace("http://", "https://")
     }));
 
-    // Dédoublonnage strict
+    // Filtrage strict : pas déjà jugée, pas dans la file, pas en cours de traitement
     const filtered = fetched.filter(item => 
       !judgedCars.includes(item.id) && 
-      !currentQueue.some(q => q.id === item.id)
+      !currentQueue.some(q => q.id === item.id) &&
+      !processingIds.has(item.id)
     );
     
     // Préchargement asynchrone des images
     filtered.forEach(async (car) => {
+      processingIds.add(car.id);
       const isValid = await preloadImage(car.img);
-      if (isValid) {
+      
+      if (isValid && !judgedCars.includes(car.id)) {
         currentQueue.push(car);
-        // Si la file était vide et qu'on attendait une image, on affiche la première immédiatement
+        // Si c'est la première voiture chargée et qu'on attendait un affichage
         if (currentQueue.length === 1 && document.getElementById('cardImg').style.display === 'none') {
           renderCurrentCard();
         }
+      } else {
+        processingIds.delete(car.id);
       }
     });
 
@@ -108,7 +114,7 @@ async function fetchCarsFromAPI() {
 }
 
 async function renderCurrentCard() {
-  // Déclenche une recharge dès qu'on passe sous le seuil des 10 voitures en réserve
+  // Déclenche une recharge si on passe sous le seuil des 10 voitures
   if (currentQueue.length < 10 && !isFetchingAPI) {
     fetchCarsFromAPI();
   }
@@ -130,7 +136,7 @@ async function renderCurrentCard() {
   const imgEl = document.getElementById('cardImg');
   const content = document.getElementById('cardContent');
 
-  // L'image étant déjà en cache navigateur grâce à preloadImage(), le rendu est direct
+  // Affichage direct (image déjà en cache navigateur)
   imgEl.src = car.img;
   imgEl.style.display = 'block';
   loader.style.display = 'none';
@@ -150,15 +156,16 @@ async function handleVote(isSmash) {
   isAnimating = true;
 
   const card = document.getElementById('cFront');
-  const currentCar = currentQueue.shift();
+  const currentCar = currentQueue.shift(); // Retiré immédiatement de la file
 
-  if (!judgedCars.includes(currentCar.id)) {
+  if (currentCar && !judgedCars.includes(currentCar.id)) {
     judgedCars.push(currentCar.id);
+    processingIds.delete(currentCar.id);
   }
 
   card.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
   
-  if (isSmash) {
+  if (isSmash && currentCar) {
     if (!garage.some(g => g.id === currentCar.id)) {
       garage.push(currentCar);
     }
